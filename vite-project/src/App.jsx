@@ -1,16 +1,15 @@
 
-import './App.css'
-import Hero from './components/Hero'
-import HeroSlide from './components/HeroSlide'
+import './App.css';
+import Hero from './components/Hero';
+import CustomCursor from './components/CustomCursor';
 
 function App() {
-
   return (
     <>
-    <Hero />
-    {/* <HeroSlide /> */}
+      <Hero />
+      <CustomCursor />
     </>
-  )
+  );
 }
 
-export default App
+export default App;
