@@ -539,6 +539,23 @@
   flex-direction: column;
   gap: 0.8rem;
   margin-top: 1rem;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* Custom Scrollbar for Deck */
+.thumbnail-deck-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.thumbnail-deck-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thumbnail-deck-list::-webkit-scrollbar-thumb {
+  background: rgba(92, 46, 26, 0.15);
+  border-radius: 4px;
 }
 
 .thumbnail-card {
@@ -604,6 +621,53 @@
   font-weight: 700;
 }
 
+/* Beautiful Loader Screen */
+.bakery-loader-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #fdfaf6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.loader-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.spinning-donut {
+  width: 60px;
+  height: 60px;
+  border: 5px solid rgba(161, 103, 63, 0.1);
+  border-top-color: #5c2e1a;
+  border-right-color: #ff7b90;
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+}
+
+.loader-text {
+  font-family: var(--font-accent);
+  font-size: 1.8rem;
+  color: #5c2e1a;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.6; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.02); }
+}
 
 /* RESPONSIVENESS AND TABLET BREAKPOINTS */
 @media (max-width: 1200px) {
@@ -627,6 +691,23 @@
   }
   .hero-left-panel, .hero-right-panel {
     height: auto;
+  }
+  .thumbnail-deck-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-height: none;
+    padding-bottom: 8px;
+    width: 100%;
+    scroll-snap-type: x mandatory;
+  }
+  .thumbnail-card {
+    flex: 0 0 200px;
+    scroll-snap-align: start;
+  }
+  /* Custom horizontal scrollbar styling */
+  .thumbnail-deck-list::-webkit-scrollbar {
+    height: 4px;
   }
 }
 
@@ -661,3 +742,4 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
