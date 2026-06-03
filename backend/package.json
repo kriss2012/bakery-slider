@@ -1,0 +1,15 @@
+{
+  "name": "bakery-backend",
+  "version": "1.0.0",
+  "description": "Backend API for DvBakes Slider Application",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5"
+  }
+}
