@@ -1,57 +1,180 @@
-@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
-
 .navbar {
-  width: 1380px;
-  padding: 1.5rem 3rem;
-  background-color: transparent;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  padding: 1.5rem 5%;
+  background: transparent;
+}
+
+.nav-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: 'Pacifico', cursive;
-  position: absolute;
- 
-  top: 0;
-  left: 0;
-  z-index: 100;
 }
 
 .nav-brand {
-  font-family: 'Pacifico', cursive;
-  font-size: 2.1rem;
-  color: #5C2E1A;
-}
-
-.nav-items {
-  list-style: none;
+  font-family: var(--font-accent);
+  font-size: 2rem;
+  color: var(--color-primary-dark);
+  font-weight: 700;
   display: flex;
-  gap: 2rem;
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #3a2b23;
+  align-items: center;
 }
 
-.nav-items li {
-  cursor: pointer;
-  transition: color 0.3s ease;
+.brand-dot {
+  color: var(--color-accent);
+  margin-left: 2px;
 }
 
-.nav-items li:hover {
-  color: #a1673f;
+/* Desktop Links */
+.nav-items-desktop {
+  display: flex;
+  list-style: none;
+  gap: 2.5rem;
+  align-items: center;
 }
 
-.nav-button {
-  background-color: #a1673f;
-  color: white;
-  border: none;
-  padding: 0.6rem 1.4rem;
-  border-radius: 20px;
+.nav-items-desktop li {
+  position: relative;
+}
+
+.nav-link {
+  font-family: var(--font-body);
   font-size: 1rem;
-  cursor: pointer;
-    font-family: 'Pacifico', cursive;
-
-  transition: background 0.3s ease;
+  font-weight: 500;
+  color: var(--color-dark);
+  padding: 0.5rem 0;
+  transition: var(--transition-fast);
 }
 
-.nav-button:hover {
-  background-color: #5c2e1a;
+.nav-link:hover, .nav-link.active {
+  color: var(--color-primary);
+}
+
+.active-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--color-primary);
+  border-radius: 2px;
+}
+
+/* Actions Menu */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.icon-btn {
+  background: transparent;
+  color: var(--color-dark);
+  padding: 0.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  position: relative;
+}
+
+.icon-btn:hover {
+  background-color: rgba(92, 46, 26, 0.08);
+  color: var(--color-primary-dark);
+}
+
+.cart-btn {
+  position: relative;
+}
+
+.cart-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background-color: var(--color-accent);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(255, 123, 144, 0.4);
+}
+
+.nav-button-order {
+  background-color: var(--color-primary-dark);
+  color: var(--color-light);
+  font-weight: 600;
+  padding: 0.7rem 1.6rem;
+  border-radius: 30px;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 10px rgba(92, 46, 26, 0.2);
+  transition: var(--transition-fast);
+}
+
+.nav-button-order:hover {
+  background-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(161, 103, 63, 0.3);
+}
+
+.mobile-toggle {
+  display: none;
+}
+
+/* Mobile Drawer */
+.mobile-drawer {
+  display: none;
+  background: rgba(253, 250, 246, 0.95);
+  backdrop-filter: blur(10px);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  padding: 1.5rem 5%;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  border-bottom: 1px solid rgba(92, 46, 26, 0.05);
+}
+
+.nav-items-mobile {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  gap: 1.5rem;
+}
+
+.nav-items-mobile a {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-dark);
+  display: block;
+}
+
+.mobile-order-btn {
+  width: 100%;
+  background-color: var(--color-primary-dark);
+  color: var(--color-light);
+  padding: 0.9rem;
+  border-radius: 30px;
+  font-weight: 600;
+}
+
+/* Responsiveness */
+@media (max-width: 1023px) {
+  .nav-items-desktop, .nav-button-order {
+    display: none;
+  }
+  .mobile-toggle, .mobile-drawer {
+    display: block;
+  }
 }
