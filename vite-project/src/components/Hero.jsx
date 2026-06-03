@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './Hero.css';
 import Navbar from './Navbar';
+import CartDrawer from './CartDrawer';
 import { FaArrowLeft, FaArrowRight, FaStar, FaPlus, FaCheck } from 'react-icons/fa';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
-const slides = [
+// Resilient Fallback Data in case backend is offline
+const FALLBACK_SLIDES = [
   {
+    id: 'choco-bliss',
     src: './images/choco.png',
     alt: 'Chocolate Shake',
     title: 'Velvet Choco Bliss',
     category: 'Signature Shake',
-    price: '$6.99',
+    price: 6.99,
     rating: 4.9,
     reviews: 124,
     description: 'Dive into layers of rich cocoa, smooth cream, and a swirl of happiness. Our signature chocolate shake is made to melt your heart and satisfy your cravings.',
@@ -34,11 +37,12 @@ const slides = [
     bgText: 'CHOCO'
   },
   {
+    id: 'mint-cupcake',
     src: './images/cupcake.png',
     alt: 'Cupcake',
     title: 'Minty Cupcake Cloud',
     category: 'Gourmet Cupcake',
-    price: '$4.50',
+    price: 4.50,
     rating: 4.8,
     reviews: 98,
     description: 'A swirl of vanilla, a dash of mint, and the fluffiest cupcake you have ever met. Light, creamy, and dreamy in every single bite.',
@@ -62,11 +66,12 @@ const slides = [
     bgText: 'SWEET'
   },
   {
+    id: 'blueberry-dream',
     src: './images/blueberry.png',
     alt: 'Blueberry Shake',
     title: 'Berrylicious Dream',
     category: 'Fresh Berry Shake',
-    price: '$7.25',
+    price: 7.25,
     rating: 4.9,
     reviews: 146,
     description: 'Bursting with real wild blueberries, whipped cream, and a whole lot of magic. This one’s made to refresh, delight, and impress.',
@@ -90,11 +95,12 @@ const slides = [
     bgText: 'BERRY'
   },
   {
+    id: 'strawberry-donut',
     src: './images/donut.png',
     alt: 'Donut',
     title: 'Sugar Glazed Hug',
     category: 'Handcrafted Donut',
-    price: '$3.99',
+    price: 3.99,
     rating: 4.7,
     reviews: 112,
     description: 'Soft, fluffy, and coated in pink sweetness. Our custom strawberry-glazed donut is a cuddle disguised as a delicious snack.',
@@ -120,10 +126,17 @@ const slides = [
 ];
 
 const Hero = () => {
+  const [products, setProducts] = useState(FALLBACK_SLIDES);
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const [activeTab, setActiveTab] = useState('details'); // details, ingredients, nutrition
-  const [cartCount, setCartCount] = useState(0);
+  
+  // Cart Backend States
+  const [cart, setCart] = useState({ items: [] });
+  const [cartId, setCartId] = useState(localStorage.getItem('cartId') || '');
+  const [cartOpen, setCartOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const [activeToppings, setActiveToppings] = useState({
     sprinkles: false,
     chocoChips: false,
@@ -131,8 +144,49 @@ const Hero = () => {
     marshmallows: false,
   });
   const [particles, setParticles] = useState([]);
+  
+  const toppingTimeouts = useRef({});
 
-  const activeSlide = slides[index];
+  // Fetch products and cart from backend API
+  useEffect(() => {
+    const initApp = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const prodData = await res.json();
+          setProducts(prodData);
+        }
+      } catch (err) {
+        console.warn("Could not fetch products from backend, using fallbacks:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    initApp();
+  }, []);
+
+  useEffect(() => {
+    const fetchCart = async () => {
+      try {
+        const url = cartId ? `/api/cart?cartId=${cartId}` : '/api/cart';
+        const res = await fetch(url);
+        if (res.ok) {
+          const cartData = await res.json();
+          setCart(cartData);
+          if (cartData.cartId) {
+            localStorage.setItem('cartId', cartData.cartId);
+            setCartId(cartData.cartId);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not load cart state:", err);
+      }
+    };
+    fetchCart();
+  }, [cartId]);
+
+  const activeSlide = products[index] || FALLBACK_SLIDES[0];
 
   // Mouse Parallax values using Framer Motion springs
   const mouseX = useMotionValue(0);
@@ -163,17 +217,21 @@ const Hero = () => {
 
   const handleNext = () => {
     setDirection(1);
-    setIndex((prev) => (prev + 1) % slides.length);
+    setIndex((prev) => (prev + 1) % products.length);
     resetToppings();
   };
 
   const handlePrev = () => {
     setDirection(-1);
-    setIndex((prev) => (prev - 1 + slides.length) % slides.length);
+    setIndex((prev) => (prev - 1 + products.length) % products.length);
     resetToppings();
   };
 
   const resetToppings = () => {
+    // Clear all scheduled timeouts for toppings animations
+    Object.values(toppingTimeouts.current).forEach(clearTimeout);
+    toppingTimeouts.current = {};
+    
     setActiveToppings({
       sprinkles: false,
       chocoChips: false,
@@ -186,41 +244,167 @@ const Hero = () => {
   const toggleTopping = (topping) => {
     setActiveToppings((prev) => {
       const nextState = !prev[topping];
+      
+      // If toggled ON:
       if (nextState) {
         // Generate falling particles
         const newParticles = Array.from({ length: 25 }).map((_, i) => ({
           id: `${topping}-${Date.now()}-${i}`,
           type: topping,
-          left: `${15 + Math.random() * 70}%`, // range within the image container
+          left: `${15 + Math.random() * 70}%`,
           delay: Math.random() * 1.5,
           scale: 0.6 + Math.random() * 0.8,
           rotation: Math.random() * 360,
           speed: 1.5 + Math.random() * 2
         }));
         setParticles((prevP) => [...prevP, ...newParticles]);
+
+        // Auto stop particle animation and untoggle after 5 seconds
+        if (toppingTimeouts.current[topping]) {
+          clearTimeout(toppingTimeouts.current[topping]);
+        }
+        toppingTimeouts.current[topping] = setTimeout(() => {
+          setActiveToppings(curr => ({ ...curr, [topping]: false }));
+          setParticles(currP => currP.filter(p => p.type !== topping));
+          delete toppingTimeouts.current[topping];
+        }, 5000);
+
       } else {
-        // Remove particles of that type
+        // If toggled OFF manually:
         setParticles((prevP) => prevP.filter((p) => p.type !== topping));
+        if (toppingTimeouts.current[topping]) {
+          clearTimeout(toppingTimeouts.current[topping]);
+          delete toppingTimeouts.current[topping];
+        }
       }
       return { ...prev, [topping]: nextState };
     });
   };
 
-  const handleOrder = () => {
-    setCartCount((c) => c + 1);
+  // Clean up timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(toppingTimeouts.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  // Cart API Integration
+  const handleOrder = async () => {
+    try {
+      const res = await fetch('/api/cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartId,
+          productId: activeSlide.id,
+          quantity: 1,
+          toppings: activeToppings
+        })
+      });
+      if (res.ok) {
+        const cartData = await res.json();
+        setCart(cartData);
+        if (cartData.cartId && !cartId) {
+          localStorage.setItem('cartId', cartData.cartId);
+          setCartId(cartData.cartId);
+        }
+        // Open cart drawer for immediate visual confirmation
+        setCartOpen(true);
+      }
+    } catch (err) {
+      console.error("Failed to add item to cart:", err);
+    }
   };
 
-  // Autoplay slider interval (paused if toppings are active)
+  const handleUpdateQuantity = async (itemId, newQty) => {
+    try {
+      const res = await fetch('/api/cart/item', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartId,
+          itemId,
+          quantity: newQty
+        })
+      });
+      if (res.ok) {
+        const cartData = await res.json();
+        setCart(cartData);
+      }
+    } catch (err) {
+      console.error("Failed to update quantity:", err);
+    }
+  };
+
+  const handleRemoveItem = async (itemId) => {
+    try {
+      const res = await fetch('/api/cart/item', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartId,
+          itemId
+        })
+      });
+      if (res.ok) {
+        const cartData = await res.json();
+        setCart(cartData);
+      }
+    } catch (err) {
+      console.error("Failed to remove item:", err);
+    }
+  };
+
+  const handleCheckout = async () => {
+    try {
+      const res = await fetch('/api/cart/clear', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartId
+        })
+      });
+      if (res.ok) {
+        const cartData = await res.json();
+        setCart(cartData);
+      }
+    } catch (err) {
+      console.error("Failed to checkout:", err);
+    }
+  };
+
+  // Autoplay slider interval (paused if toppings are active or cart is open)
   useEffect(() => {
     const hasActiveToppings = Object.values(activeToppings).some(v => v);
-    if (hasActiveToppings) return;
+    if (hasActiveToppings || cartOpen) return;
 
     const timer = setInterval(() => {
       handleNext();
     }, 8000);
 
     return () => clearInterval(timer);
-  }, [index, activeToppings]);
+  }, [index, activeToppings, products, cartOpen]);
+
+  // Determine if image needs a multiply blend mode (to hide white backgrounds of generated images)
+  const isImageMultiplyNeeded = 
+    activeSlide.src.includes('croissant') || 
+    activeSlide.src.includes('cake') || 
+    activeSlide.src.includes('macaron') || 
+    activeSlide.src.includes('waffle');
+
+  // Total cart items count
+  const cartCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
+  if (loading) {
+    return (
+      <div className="bakery-loader-screen">
+        <div className="loader-box">
+          <div className="spinning-donut" />
+          <h2 className="loader-text">Loading Bakery Lab...</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -229,7 +413,7 @@ const Hero = () => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
-      <Navbar cartCount={cartCount} />
+      <Navbar cartCount={cartCount} onCartClick={() => setCartOpen(true)} />
 
       <div className="hero-grid-container">
         
@@ -375,7 +559,7 @@ const Hero = () => {
               {/* Order Actions */}
               <div className="order-actions">
                 <div className="price-tag" style={{ color: activeSlide.themeColor }}>
-                  {activeSlide.price}
+                  ${activeSlide.price.toFixed(2)}
                 </div>
                 <button 
                   className="hero-btn" 
@@ -474,6 +658,7 @@ const Hero = () => {
                     x: imageParallaxX,
                     y: imageParallaxY,
                     transform: 'translateZ(60px)',
+                    mixBlendMode: isImageMultiplyNeeded ? 'multiply' : 'normal'
                   }}
                   initial={{ scale: 0.4, rotate: -45, opacity: 0 }}
                   animate={{ scale: 1, rotate: 0, opacity: 1 }}
@@ -496,9 +681,13 @@ const Hero = () => {
               <FaArrowLeft />
             </button>
             <span className="slider-counter">
-              <span className="current-count" style={{ color: activeSlide.themeColor }}>0{index + 1}</span>
+              <span className="current-count" style={{ color: activeSlide.themeColor }}>
+                {index + 1 < 10 ? `0${index + 1}` : index + 1}
+              </span>
               <span className="counter-sep">/</span>
-              <span className="total-count">0{slides.length}</span>
+              <span className="total-count">
+                {products.length < 10 ? `0${products.length}` : products.length}
+              </span>
             </span>
             <button className="arrow-circle next-arrow" onClick={handleNext} aria-label="Next Slide">
               <FaArrowRight />
@@ -566,8 +755,13 @@ const Hero = () => {
             <h3 className="sidebar-section-title">Chef's Deck</h3>
             
             <div className="thumbnail-deck-list">
-              {slides.map((slide, sIdx) => {
+              {products.map((slide, sIdx) => {
                 const isActive = sIdx === index;
+                const isThumbMultiply = 
+                  slide.src.includes('croissant') || 
+                  slide.src.includes('cake') || 
+                  slide.src.includes('macaron') || 
+                  slide.src.includes('waffle');
                 return (
                   <motion.div
                     key={sIdx}
@@ -585,7 +779,12 @@ const Hero = () => {
                     }}
                   >
                     <div className="thumb-img-box" style={{ background: slide.bg }}>
-                      <img src={slide.src} alt={slide.alt} className="thumb-img" />
+                      <img 
+                        src={slide.src} 
+                        alt={slide.alt} 
+                        className="thumb-img" 
+                        style={{ mixBlendMode: isThumbMultiply ? 'multiply' : 'normal' }}
+                      />
                     </div>
                     <div className="thumb-info-box">
                       <span className="thumb-category">{slide.category}</span>
@@ -601,6 +800,18 @@ const Hero = () => {
         </div>
 
       </div>
+
+      {/* Cart Slider Drawer Component */}
+      <CartDrawer 
+        isOpen={cartOpen}
+        onClose={() => setCartOpen(false)}
+        cart={cart}
+        onUpdateQuantity={handleUpdateQuantity}
+        onRemoveItem={handleRemoveItem}
+        onCheckout={handleCheckout}
+        themeColor={activeSlide.themeColor}
+        accentColor={activeSlide.accentColor}
+      />
     </div>
   );
 };
