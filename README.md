@@ -1,1 +1,1 @@
-    
+Bakery-Image-Slider 
