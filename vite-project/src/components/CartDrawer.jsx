@@ -147,14 +147,14 @@ const CartDrawer = ({
                                 disabled={item.quantity <= 1}
                               >
                                 <FiMinus size={12} />
-                              </</button>
+                              </button>
                               <span className="qty-val">{item.quantity}</span>
                               <button 
                                 className="qty-btn"
                                 onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
                               >
                                 <FiPlus size={12} />
-                              </</button>
+                              </button>
                             </div>
                             
                             <button 
