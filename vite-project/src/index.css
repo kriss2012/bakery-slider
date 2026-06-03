@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Pacifico&family=Quicksand:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-heading: 'Playfair Display', serif;
+  --font-body: 'Outfit', sans-serif;
+  --font-accent: 'Pacifico', cursive;
+  --font-sub: 'Quicksand', sans-serif;
+
+  --color-dark: #3a2b23;
+  --color-light: #fdfaf6;
+  --color-primary: #a1673f;
+  --color-primary-dark: #5c2e1a;
+  --color-primary-light: #fbeedb;
+  --color-text-muted: #6e5e54;
+  --color-accent: #ff7b90;
+
+  --transition-smooth: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  --transition-fast: all 0.25s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-light);
+  color: var(--color-dark);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+  outline: none;
+  border: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Hide default cursor on desktop for custom cursor */
+@media (min-width: 1024px) {
+  body {
+    cursor: none;
+  }
+  a, button, [role="button"], .arrow-circle, .thumbnail-card, .tab-btn, .topping-toggle {
+    cursor: none !important;
+  }
+}
