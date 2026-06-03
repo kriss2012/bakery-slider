@@ -1,0 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Cookie&family=Quicksand:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bree+Serif&family=Outfit:wght@400;600&display=swap');
+
+*{
+  padding: 0;
+  margin: 0;
+}
+.hero-section {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.hero-left {
+  max-width: 500px;
+  color: #3a2b23;
+  font-family: 'Quicksand', sans-serif;
+  position: absolute;
+  left: 50px;
+
+}
+.hero-slide-wrapper{
+    position: relative;
+}
+.hero-left h1 {
+font-family: 'Bree Serif', serif;
+   font-size: 3.5rem;
+  color: #5c2e1a;
+  margin-bottom: 1rem;
+  width: 400px;
+  
+}
+
+.hero-left p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  color: #40291b;
+    width: 400px;
+
+}
+
+.hero-btn {
+  background-color: #a1673f;
+  color: white;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  font-weight: 600;
+  font-family: 'Quicksand', sans-serif;
+}
+
+.hero-btn:hover {
+  background-color: #5c2e1a;
+}
+
+.hero-image {
+  position: absolute; 
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100vw; 
+  height: 100vh; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none; 
+  z-index: 1; 
+}
+
+.hero-slide-img {
+  max-height: 80vh;
+  width: auto;
+  object-fit: contain;
+  z-index: 2;
+  position: absolute;
+}
+
+.hero-right {
+  max-width: 300px;
+  font-family: 'Quicksand', sans-serif;
+  color: #3a2b23;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  padding-left: 2rem;
+  position: absolute;
+  right: 70px
+}
+.hero-arrows {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  position: absolute;
+  top: 600px;
+  left: 50px;
+}
+
+.arrow-circle {
+  background-color: #fbeedb;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #5c2e1a;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+}
+
+.arrow-circle:hover {
+  background-color: #e8d3b5;
+  transform: scale(1.05);
+}
