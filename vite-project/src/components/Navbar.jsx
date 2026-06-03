@@ -3,7 +3,7 @@ import './Navbar.css';
 import { FiShoppingBag, FiHeart, FiMenu, FiX } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Navbar = ({ cartCount = 0 }) => {
+const Navbar = ({ cartCount = 0, onCartClick }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -37,7 +37,7 @@ const Navbar = ({ cartCount = 0 }) => {
             <FiHeart size={20} />
           </button>
           
-          <button className="icon-btn cart-btn" aria-label="Cart">
+          <button className="icon-btn cart-btn" aria-label="Cart" onClick={onCartClick}>
             <FiShoppingBag size={20} />
             <AnimatePresence>
               {cartCount > 0 && (
@@ -53,7 +53,7 @@ const Navbar = ({ cartCount = 0 }) => {
             </AnimatePresence>
           </button>
 
-          <button className="nav-button-order">
+          <button className="nav-button-order" onClick={onCartClick}>
             Order Now
           </button>
 
@@ -79,7 +79,7 @@ const Navbar = ({ cartCount = 0 }) => {
               <li><a href="#customizer" onClick={() => setIsOpen(false)}>Bakery Lab</a></li>
               <li><a href="#about" onClick={() => setIsOpen(false)}>Our Story</a></li>
               <li>
-                <button className="mobile-order-btn">Order Now</button>
+                <button className="mobile-order-btn" onClick={() => { setIsOpen(false); onCartClick(); }}>Order Now</button>
               </li>
             </ul>
           </motion.div>
@@ -90,3 +90,4 @@ const Navbar = ({ cartCount = 0 }) => {
 };
 
 export default Navbar;
+
