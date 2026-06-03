@@ -1,9 +1,6 @@
-# Bakery Image Slider - Simple Landing Page
+# Bakery Image Slider
 
-A clean, simple landing page for a bakery featuring an image slider.
-
-## Live Demo
-[https://kriss2012.github.io/bakery-slider/](https://kriss2012.github.io/bakery-slider/)
+https://kriss2012.github.io/bakery-slider/
 
 ## Features
 
