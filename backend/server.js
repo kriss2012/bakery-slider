@@ -249,7 +249,7 @@ const products = [
   },
   {
     id: 'dark-choco-croissant',
-    src: './images/croissant.png',
+    src: './images/dark_croissant.png',
     alt: 'Dark Chocolate Croissant',
     title: 'Dark Cocoa Croissant',
     category: 'Warm Pastry',
@@ -278,7 +278,7 @@ const products = [
   },
   {
     id: 'choco-sprinkle-donut',
-    src: './images/donut.png',
+    src: './images/choco_donut.png',
     alt: 'Choco Sprinkle Donut',
     title: 'Chocolate Carnival Donut',
     category: 'Handcrafted Donut',
@@ -307,7 +307,7 @@ const products = [
   },
   {
     id: 'vanilla-cupcake',
-    src: './images/cupcake.png',
+    src: './images/vanilla_cupcake.png',
     alt: 'Vanilla Cupcake',
     title: 'Vanilla Custard Cupcake',
     category: 'Gourmet Cupcake',
@@ -336,7 +336,7 @@ const products = [
   },
   {
     id: 'double-berry-waffle',
-    src: './images/waffle.png',
+    src: './images/berry_waffle.png',
     alt: 'Double Berry Waffle',
     title: 'Double Berry Mountain Waffle',
     category: 'Belgian Waffle',
@@ -365,7 +365,7 @@ const products = [
   },
   {
     id: 'caramel-macaron',
-    src: './images/macaron.png',
+    src: './images/caramel_macaron.png',
     alt: 'Caramel Macaron',
     title: 'Salted Caramel Macaron',
     category: 'French Macaron',
@@ -394,7 +394,7 @@ const products = [
   },
   {
     id: 'matcha-donut',
-    src: './images/donut.png',
+    src: './images/matcha_donut.png',
     alt: 'Matcha Donut',
     title: 'Zen Matcha Glazed Donut',
     category: 'Handcrafted Donut',
@@ -423,7 +423,7 @@ const products = [
   },
   {
     id: 'hazelnut-shake',
-    src: './images/choco.png',
+    src: './images/hazelnut_shake.png',
     alt: 'Hazelnut Shake',
     title: 'Hazelnut Dream Shake',
     category: 'Signature Shake',
@@ -452,7 +452,7 @@ const products = [
   },
   {
     id: 'lemon-tart',
-    src: './images/cake.png',
+    src: './images/lemon_tart.png',
     alt: 'Lemon Tart',
     title: 'Lemon Meringue Symphony',
     category: 'Gourmet Cake',
@@ -481,7 +481,7 @@ const products = [
   },
   {
     id: 'almond-croissant',
-    src: './images/croissant.png',
+    src: './images/almond_croissant.png',
     alt: 'Almond Croissant',
     title: 'Almond Frangipane Croissant',
     category: 'Warm Pastry',
@@ -510,7 +510,7 @@ const products = [
   },
   {
     id: 'raspberry-cupcake',
-    src: './images/cupcake.png',
+    src: './images/raspberry_cupcake.png',
     alt: 'Raspberry Cupcake',
     title: 'Raspberry Velvet Cupcake',
     category: 'Gourmet Cupcake',
@@ -539,7 +539,7 @@ const products = [
   },
   {
     id: 'mango-shake',
-    src: './images/blueberry.png',
+    src: './images/mango_shake.png',
     alt: 'Mango Passion Shake',
     title: 'Mango Passion Fruit Shake',
     category: 'Signature Shake',
@@ -568,7 +568,7 @@ const products = [
   },
   {
     id: 'blueberry-macaron',
-    src: './images/macaron.png',
+    src: './images/blueberry_macaron.png',
     alt: 'Blueberry Macaron',
     title: 'Wild Blueberry Macaron',
     category: 'French Macaron',
@@ -597,7 +597,7 @@ const products = [
   },
   {
     id: 'cinnamon-roll',
-    src: './images/croissant.png',
+    src: './images/cinnamon_roll.png',
     alt: 'Cinnamon Roll',
     title: 'Gourmet Cinnamon Roll',
     category: 'Warm Pastry',
@@ -623,6 +623,122 @@ const products = [
       { name: 'Sugars', percentage: 35 }
     ],
     bgText: 'CINNY'
+  },
+  {
+    id: 'rose-donut',
+    src: './images/rose_donut.png',
+    alt: 'Velvet Rose Donut',
+    title: 'Velvet Rose Donut',
+    category: 'Handcrafted Donut',
+    price: 4.50,
+    rating: 4.9,
+    reviews: 84,
+    description: 'A beautiful pink velvet rose glazed donut, decorated with delicate white frosting petals and a soft vanilla aroma.',
+    bg: 'radial-gradient(circle at center, #ffffff 0%, #fdf0f4 50%, #f3b5c7 100%)',
+    themeColor: '#7a2f45',
+    accentColor: '#d65376',
+    textColor: '#421a25',
+    specs: [
+      { label: "Glaze", value: "Rose Syrup Glaze" },
+      { label: "Style", value: "Pink Velvet Yeast" },
+      { label: "Calories", value: "210 kcal" },
+      { label: "Freshness", value: "Fresh Baked" }
+    ],
+    ingredients: ['Velvet Cake Flour', 'Rose Water Syrup', 'Vanilla Cream Petals', 'Sugar Pearls', 'Organic Butter'],
+    nutrition: [
+      { name: 'Carbs', percentage: 70 },
+      { name: 'Fats', percentage: 40 },
+      { name: 'Proteins', percentage: 14 },
+      { name: 'Sugars', percentage: 38 }
+    ],
+    bgText: 'ROSE'
+  },
+  {
+    id: 'matcha-waffle',
+    src: './images/matcha_waffle.png',
+    alt: 'Matcha Garden Waffle',
+    title: 'Matcha Garden Waffle',
+    category: 'Belgian Waffle',
+    price: 5.75,
+    rating: 4.8,
+    reviews: 76,
+    description: 'A golden Belgian waffle dusted with green ceremonial matcha powder, topped with fresh whipped cream and sweet red bean paste.',
+    bg: 'radial-gradient(circle at center, #ffffff 0%, #e8f8f5 50%, #76d7c4 100%)',
+    themeColor: '#0e6251',
+    accentColor: '#1abc9c',
+    textColor: '#0a3d32',
+    specs: [
+      { label: "Matcha", value: "Ceremonial Uji" },
+      { label: "Base", value: "Lighter Batter" },
+      { label: "Calories", value: "295 kcal" },
+      { label: "Bake Temp", value: "190°C" }
+    ],
+    ingredients: ['Stone Ground Flour', 'Uji Matcha Powder', 'Whipped Cream', 'Sweet Red Bean', 'Organic Honey'],
+    nutrition: [
+      { name: 'Carbs', percentage: 58 },
+      { name: 'Fats', percentage: 32 },
+      { name: 'Proteins', percentage: 16 },
+      { name: 'Sugars', percentage: 24 }
+    ],
+    bgText: 'MATCHA'
+  },
+  {
+    id: 'lava-cake',
+    src: './images/lava_cake.png',
+    alt: 'Gourmet Fudge Lava Cake',
+    title: 'Gourmet Fudge Lava Cake',
+    category: 'Gourmet Cake',
+    price: 6.25,
+    rating: 4.9,
+    reviews: 189,
+    description: 'A rich chocolate lava cake with warm molten Belgian fudge flowing out of the center, paired with a vanilla bean dusting.',
+    bg: 'radial-gradient(circle at center, #ffffff 0%, #f3ebd8 50%, #c49675 100%)',
+    themeColor: '#5c2e1a',
+    accentColor: '#a1673f',
+    textColor: '#3a2b23',
+    specs: [
+      { label: "Fudge", value: "Belgian Molten" },
+      { label: "Layers", value: "Warm Liquid Center" },
+      { label: "Calories", value: "390 kcal" },
+      { label: "Serving", value: "120 g" }
+    ],
+    ingredients: ['Belgian Cocoa Liquor', 'Brown Butter', 'Gourmet Sugar Cane', 'Fresh Farm Eggs', 'Vanilla Bean Powder'],
+    nutrition: [
+      { name: 'Carbs', percentage: 62 },
+      { name: 'Fats', percentage: 56 },
+      { name: 'Proteins', percentage: 18 },
+      { name: 'Sugars', percentage: 42 }
+    ],
+    bgText: 'LAVA'
+  },
+  {
+    id: 'pistachio-shake',
+    src: './images/pistachio_shake.png',
+    alt: 'Pistachio Shake',
+    title: 'Pistachio Praline Shake',
+    category: 'Signature Shake',
+    price: 7.75,
+    rating: 4.9,
+    reviews: 108,
+    description: 'A creamy pistachio shake in a glass, topped with whipped cream, crushed green pistachios, and caramel praline pieces.',
+    bg: 'radial-gradient(circle at center, #ffffff 0%, #ebf5fb 50%, #85c1e9 100%)',
+    themeColor: '#1b4f72',
+    accentColor: '#3498db',
+    textColor: '#153e5b',
+    specs: [
+      { label: "Nuts", value: "Sicilian Pistachio" },
+      { label: "Base", value: "Oat Milk & Gelato" },
+      { label: "Calories", value: "350 kcal" },
+      { label: "Serving", value: "350 ml" }
+    ],
+    ingredients: ['Sicilian Pistachio Gelato', 'Organic Oat Milk', 'Whipped Double Cream', 'Caramel Praline Crumbles', 'Raw Honey'],
+    nutrition: [
+      { name: 'Carbs', percentage: 52 },
+      { name: 'Fats', percentage: 48 },
+      { name: 'Proteins', percentage: 24 },
+      { name: 'Sugars', percentage: 22 }
+    ],
+    bgText: 'PRALINE'
   }
 ];
 
