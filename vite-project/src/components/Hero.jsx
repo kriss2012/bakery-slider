@@ -387,10 +387,7 @@ const Hero = () => {
 
   // Determine if image needs a multiply blend mode (to hide white backgrounds of generated images)
   const isImageMultiplyNeeded = 
-    activeSlide.src.includes('croissant') || 
-    activeSlide.src.includes('cake') || 
-    activeSlide.src.includes('macaron') || 
-    activeSlide.src.includes('waffle');
+    !['./images/choco.png', './images/cupcake.png', './images/blueberry.png', './images/donut.png'].includes(activeSlide.src);
 
   // Total cart items count
   const cartCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
@@ -758,10 +755,7 @@ const Hero = () => {
               {products.map((slide, sIdx) => {
                 const isActive = sIdx === index;
                 const isThumbMultiply = 
-                  slide.src.includes('croissant') || 
-                  slide.src.includes('cake') || 
-                  slide.src.includes('macaron') || 
-                  slide.src.includes('waffle');
+                  !['./images/choco.png', './images/cupcake.png', './images/blueberry.png', './images/donut.png'].includes(slide.src);
                 return (
                   <motion.div
                     key={sIdx}
