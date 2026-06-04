@@ -25,42 +25,44 @@ const CustomCursor = () => {
       setIsVisible(false);
     };
 
-    window.addEventListener('mousemove', moveCursor);
-    document.addEventListener('mouseleave', handleMouseLeave);
+    let currentHoveredElement = null;
 
-    const addHoverListeners = () => {
-      const clickables = document.querySelectorAll('a, button, .arrow-circle, .thumbnail-card, .topping-toggle, .tab-btn');
+    const handleMouseOver = (e) => {
+      const target = e.target.closest('a, button, .arrow-circle, .thumbnail-card, .topping-toggle, .tab-btn');
       
-      clickables.forEach((el) => {
-        el.addEventListener('mouseenter', () => {
+      if (target) {
+        if (target !== currentHoveredElement) {
+          currentHoveredElement = target;
           setCursorType('hover');
-          if (el.classList.contains('arrow-circle')) {
+          if (target.classList.contains('arrow-circle')) {
             setCursorText('SLIDE');
-          } else if (el.classList.contains('thumbnail-card')) {
+          } else if (target.classList.contains('thumbnail-card')) {
             setCursorText('SELECT');
-          } else if (el.classList.contains('topping-toggle')) {
+          } else if (target.classList.contains('topping-toggle')) {
             setCursorText('ADD');
-          } else if (el.classList.contains('nav-button') || el.classList.contains('hero-btn')) {
+          } else if (target.classList.contains('nav-button') || target.classList.contains('hero-btn')) {
             setCursorText('ORDER');
+          } else {
+            setCursorText('');
           }
-        });
-
-        el.addEventListener('mouseleave', () => {
+        }
+      } else {
+        if (currentHoveredElement !== null) {
+          currentHoveredElement = null;
           setCursorType('default');
           setCursorText('');
-        });
-      });
+        }
+      }
     };
 
-    // Run initially and set up a mutation observer to attach to dynamic elements
-    addHoverListeners();
-    const observer = new MutationObserver(addHoverListeners);
-    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('mousemove', moveCursor);
+    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('mouseover', handleMouseOver);
 
     return () => {
       window.removeEventListener('mousemove', moveCursor);
       document.removeEventListener('mouseleave', handleMouseLeave);
-      observer.disconnect();
+      document.removeEventListener('mouseover', handleMouseOver);
     };
   }, [isVisible, cursorX, cursorY]);
 
