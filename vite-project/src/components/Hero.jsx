@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Hero.css';
 import Navbar from './Navbar';
 import CartDrawer from './CartDrawer';
+import AdminPortal from './AdminPortal';
+import OrderTracker from './OrderTracker';
 import { FaArrowLeft, FaArrowRight, FaStar, FaPlus, FaCheck } from 'react-icons/fa';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
@@ -16,6 +18,7 @@ const FALLBACK_SLIDES = [
     price: 6.99,
     rating: 4.9,
     reviews: 124,
+    stock: 12,
     description: 'Dive into layers of rich cocoa, smooth cream, and a swirl of happiness. Our signature chocolate shake is made to melt your heart and satisfy your cravings.',
     bg: 'radial-gradient(circle at center, #ffffff 0%, #f3ebd8 50%, #c49675 100%)',
     themeColor: '#5c2e1a',
@@ -45,6 +48,7 @@ const FALLBACK_SLIDES = [
     price: 4.50,
     rating: 4.8,
     reviews: 98,
+    stock: 8,
     description: 'A swirl of vanilla, a dash of mint, and the fluffiest cupcake you have ever met. Light, creamy, and dreamy in every single bite.',
     bg: 'radial-gradient(circle at center, #ffffff 0%, #e6f7ef 50%, #abd8c0 100%)',
     themeColor: '#1c4c34',
@@ -74,6 +78,7 @@ const FALLBACK_SLIDES = [
     price: 7.25,
     rating: 4.9,
     reviews: 146,
+    stock: 15,
     description: 'Bursting with real wild blueberries, whipped cream, and a whole lot of magic. This one’s made to refresh, delight, and impress.',
     bg: 'radial-gradient(circle at center, #ffffff 0%, #f4e8fa 50%, #caa4db 100%)',
     themeColor: '#4f2b5c',
@@ -103,6 +108,7 @@ const FALLBACK_SLIDES = [
     price: 3.99,
     rating: 4.7,
     reviews: 112,
+    stock: 20,
     description: 'Soft, fluffy, and coated in pink sweetness. Our custom strawberry-glazed donut is a cuddle disguised as a delicious snack.',
     bg: 'radial-gradient(circle at center, #ffffff 0%, #fdf0f4 50%, #f3b5c7 100%)',
     themeColor: '#7a2f45',
@@ -131,6 +137,10 @@ const Hero = () => {
   const [direction, setDirection] = useState(1);
   const [activeTab, setActiveTab] = useState('details'); // details, ingredients, nutrition
   
+  // Views: 'shop' | 'admin' | 'tracker'
+  const [view, setView] = useState('shop');
+  const [activeOrderId, setActiveOrderId] = useState(localStorage.getItem('lastOrderId') || '');
+
   // Cart Backend States
   const [cart, setCart] = useState({ items: [] });
   const [cartId, setCartId] = useState(localStorage.getItem('cartId') || '');
@@ -147,42 +157,46 @@ const Hero = () => {
   
   const toppingTimeouts = useRef({});
 
-  // Fetch products and cart from backend API
+  // Fetch products from backend API
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/products');
+      if (res.ok) {
+        const prodData = await res.json();
+        setProducts(prodData);
+      }
+    } catch (err) {
+      console.warn("Could not fetch products from backend, using fallbacks:", err);
+    }
+  };
+
   useEffect(() => {
     const initApp = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch('/api/products');
-        if (res.ok) {
-          const prodData = await res.json();
-          setProducts(prodData);
-        }
-      } catch (err) {
-        console.warn("Could not fetch products from backend, using fallbacks:", err);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      await fetchProducts();
+      setLoading(false);
     };
     initApp();
   }, []);
 
-  useEffect(() => {
-    const fetchCart = async () => {
-      try {
-        const url = cartId ? `/api/cart?cartId=${cartId}` : '/api/cart';
-        const res = await fetch(url);
-        if (res.ok) {
-          const cartData = await res.json();
-          setCart(cartData);
-          if (cartData.cartId) {
-            localStorage.setItem('cartId', cartData.cartId);
-            setCartId(cartData.cartId);
-          }
+  const fetchCart = async () => {
+    try {
+      const url = cartId ? `/api/cart?cartId=${cartId}` : '/api/cart';
+      const res = await fetch(url);
+      if (res.ok) {
+        const cartData = await res.json();
+        setCart(cartData);
+        if (cartData.cartId) {
+          localStorage.setItem('cartId', cartData.cartId);
+          setCartId(cartData.cartId);
         }
-      } catch (err) {
-        console.warn("Could not load cart state:", err);
       }
-    };
+    } catch (err) {
+      console.warn("Could not load cart state:", err);
+    }
+  };
+
+  useEffect(() => {
     fetchCart();
   }, [cartId]);
 
@@ -290,6 +304,7 @@ const Hero = () => {
 
   // Cart API Integration
   const handleOrder = async () => {
+    if (activeSlide.stock === 0) return;
     try {
       const res = await fetch('/api/cart', {
         method: 'POST',
@@ -310,6 +325,9 @@ const Hero = () => {
         }
         // Open cart drawer for immediate visual confirmation
         setCartOpen(true);
+      } else {
+        const err = await res.json();
+        alert(err.error || 'Out of stock!');
       }
     } catch (err) {
       console.error("Failed to add item to cart:", err);
@@ -355,26 +373,31 @@ const Hero = () => {
     }
   };
 
-  const handleCheckout = async () => {
-    try {
-      const res = await fetch('/api/cart/clear', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cartId
-        })
-      });
-      if (res.ok) {
-        const cartData = await res.json();
-        setCart(cartData);
-      }
-    } catch (err) {
-      console.error("Failed to checkout:", err);
+  // Called when Checkout completes successfully
+  const handleCheckoutSuccess = (order) => {
+    // Save order details
+    setActiveOrderId(order.id);
+    localStorage.setItem('lastOrderId', order.id);
+    
+    // Clear local cart state (backend cart is already cleared)
+    setCart({ cartId, items: [] });
+    
+    // Switch to tracker view and close drawer
+    setView('tracker');
+    setCartOpen(false);
+  };
+
+  // Switch view helper (refreshes product data when returning to shop)
+  const handleViewChange = (newView) => {
+    setView(newView);
+    if (newView === 'shop') {
+      fetchProducts();
     }
   };
 
-  // Autoplay slider interval (paused if toppings are active or cart is open)
+  // Autoplay slider interval (paused if toppings are active, cart is open, or not on shop view)
   useEffect(() => {
+    if (view !== 'shop') return;
     const hasActiveToppings = Object.values(activeToppings).some(v => v);
     if (hasActiveToppings || cartOpen) return;
 
@@ -383,7 +406,7 @@ const Hero = () => {
     }, 8000);
 
     return () => clearInterval(timer);
-  }, [index, activeToppings, products, cartOpen]);
+  }, [index, activeToppings, products, cartOpen, view]);
 
   // Determine if image needs a multiply blend mode (to hide white backgrounds of generated images)
   const isImageMultiplyNeeded = 
@@ -403,15 +426,31 @@ const Hero = () => {
     );
   }
 
-  return (
-    <div 
-      className="hero-wrapper"
-      style={{ background: activeSlide.bg }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-    >
-      <Navbar cartCount={cartCount} onCartClick={() => setCartOpen(true)} />
+  // Branch layout based on active view
+  const renderViewContent = () => {
+    if (view === 'admin') {
+      return (
+        <AdminPortal 
+          onBackToShop={() => handleViewChange('shop')} 
+          themeColor={activeSlide.themeColor} 
+          accentColor={activeSlide.accentColor} 
+        />
+      );
+    }
 
+    if (view === 'tracker') {
+      return (
+        <OrderTracker 
+          orderId={activeOrderId} 
+          onBackToShop={() => handleViewChange('shop')} 
+          themeColor={activeSlide.themeColor} 
+          accentColor={activeSlide.accentColor} 
+        />
+      );
+    }
+
+    // Default: 'shop' view slider layout
+    return (
       <div className="hero-grid-container">
         
         {/* LEFT COLUMN: PRODUCT INFORMATION */}
@@ -440,8 +479,8 @@ const Hero = () => {
                     <FaStar key={i} color="#ffb800" size={15} />
                   ))}
                 </div>
-                <span className="rating-number">{activeSlide.rating}</span>
-                <span className="rating-reviews">({activeSlide.reviews} customer reviews)</span>
+                <span className="rating-number">4.9</span>
+                <span className="rating-reviews">(120+ customer reviews)</span>
               </div>
 
               {/* Tab Selector */}
@@ -484,7 +523,7 @@ const Hero = () => {
                       <p className="info-desc">{activeSlide.description}</p>
                       
                       <div className="specs-grid">
-                        {activeSlide.specs.map((spec, sIdx) => (
+                        {activeSlide.specs && activeSlide.specs.map((spec, sIdx) => (
                           <div key={sIdx} className="spec-card">
                             <span className="spec-label">{spec.label}</span>
                             <span className="spec-val" style={{ color: activeSlide.themeColor }}>{spec.value}</span>
@@ -504,7 +543,7 @@ const Hero = () => {
                       className="tab-content-wrapper"
                     >
                       <ul className="ingredients-list">
-                        {activeSlide.ingredients.map((ing, iIdx) => (
+                        {activeSlide.ingredients && activeSlide.ingredients.map((ing, iIdx) => (
                           <motion.li 
                             key={iIdx}
                             initial={{ opacity: 0, x: -10 }}
@@ -530,7 +569,7 @@ const Hero = () => {
                       className="tab-content-wrapper"
                     >
                       <div className="nutrition-container">
-                        {activeSlide.nutrition.map((nut, nIdx) => (
+                        {activeSlide.nutrition && activeSlide.nutrition.map((nut, nIdx) => (
                           <div key={nIdx} className="nutrition-row">
                             <div className="nutrition-labels">
                               <span className="nut-name">{nut.name}</span>
@@ -553,17 +592,38 @@ const Hero = () => {
                 </AnimatePresence>
               </div>
 
+              {/* Stock Warning Badge */}
+              <div className="stock-status-wrapper">
+                {activeSlide.stock === 0 ? (
+                  <span className="stock-indicator-badge sold-out">
+                    ● Out of Stock (Sold Out)
+                  </span>
+                ) : activeSlide.stock <= 5 ? (
+                  <span className="stock-indicator-badge low-stock">
+                    ● Only {activeSlide.stock} units left in stock!
+                  </span>
+                ) : (
+                  <span className="stock-indicator-badge in-stock">
+                    ● In Stock: {activeSlide.stock} items available
+                  </span>
+                )}
+              </div>
+
               {/* Order Actions */}
               <div className="order-actions">
                 <div className="price-tag" style={{ color: activeSlide.themeColor }}>
-                  ${activeSlide.price.toFixed(2)}
+                  ${activeSlide.price?.toFixed(2)}
                 </div>
                 <button 
                   className="hero-btn" 
                   onClick={handleOrder}
-                  style={{ backgroundColor: activeSlide.themeColor }}
+                  disabled={activeSlide.stock === 0}
+                  style={{ 
+                    backgroundColor: activeSlide.stock === 0 ? '#8c7a70' : activeSlide.themeColor,
+                    cursor: activeSlide.stock === 0 ? 'not-allowed' : 'pointer'
+                  }}
                 >
-                  Add to Cart
+                  {activeSlide.stock === 0 ? 'Sold Out' : 'Add to Cart'}
                 </button>
               </div>
             </motion.div>
@@ -794,6 +854,24 @@ const Hero = () => {
         </div>
 
       </div>
+    );
+  };
+
+  return (
+    <div 
+      className="hero-wrapper"
+      style={{ background: view === 'shop' ? activeSlide.bg : 'radial-gradient(circle at center, #ffffff 0%, #fdfaf6 50%, #f2eae1 100%)' }}
+      onMouseMove={view === 'shop' ? handleMouseMove : undefined}
+      onMouseLeave={view === 'shop' ? handleMouseLeave : undefined}
+    >
+      <Navbar 
+        cartCount={cartCount} 
+        onCartClick={() => setCartOpen(true)} 
+        currentView={view}
+        onViewChange={handleViewChange}
+      />
+
+      {renderViewContent()}
 
       {/* Cart Slider Drawer Component */}
       <CartDrawer 
@@ -802,7 +880,7 @@ const Hero = () => {
         cart={cart}
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveItem}
-        onCheckout={handleCheckout}
+        onCheckoutSuccess={handleCheckoutSuccess}
         themeColor={activeSlide.themeColor}
         accentColor={activeSlide.accentColor}
       />
