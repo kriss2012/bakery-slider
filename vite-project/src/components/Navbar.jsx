@@ -1,39 +1,70 @@
 import React, { useState } from 'react';
 import './Navbar.css';
-import { FiShoppingBag, FiHeart, FiMenu, FiX } from 'react-icons/fi';
+import { FiShoppingBag, FiHeart, FiMenu, FiX, FiCheckSquare, FiUserCheck, FiClock } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Navbar = ({ cartCount = 0, onCartClick }) => {
+const Navbar = ({ cartCount = 0, onCartClick, currentView = 'shop', onViewChange }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLinkClick = (e, view) => {
+    e.preventDefault();
+    if (onViewChange) {
+      onViewChange(view);
+    }
+    setIsOpen(false);
+  };
 
   return (
     <nav className="navbar">
       <div className="nav-container">
         {/* Brand Logo */}
-        <a href="/" className="nav-brand">
+        <a href="/" className="nav-brand" onClick={(e) => handleLinkClick(e, 'shop')}>
           DvBakes<span className="brand-dot">.</span>
         </a>
 
         {/* Desktop Menu */}
         <ul className="nav-items-desktop">
           <li>
-            <a href="#home" className="nav-link active">Home</a>
-            <span className="active-line"></span>
+            <a 
+              href="#home" 
+              className={`nav-link ${currentView === 'shop' ? 'active' : ''}`}
+              onClick={(e) => handleLinkClick(e, 'shop')}
+            >
+              Bakery Lab
+            </a>
+            {currentView === 'shop' && <span className="active-line"></span>}
           </li>
+          
           <li>
-            <a href="#menu" className="nav-link">Menu</a>
+            <a 
+              href="#tracker" 
+              className={`nav-link ${currentView === 'tracker' ? 'active' : ''}`}
+              onClick={(e) => handleLinkClick(e, 'tracker')}
+            >
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <FiClock size={14} /> Track Order
+              </span>
+            </a>
+            {currentView === 'tracker' && <span className="active-line"></span>}
           </li>
+
           <li>
-            <a href="#customizer" className="nav-link">Bakery Lab</a>
-          </li>
-          <li>
-            <a href="#about" className="nav-link">Our Story</a>
+            <a 
+              href="#admin" 
+              className={`nav-link ${currentView === 'admin' ? 'active' : ''}`}
+              onClick={(e) => handleLinkClick(e, 'admin')}
+            >
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                <FiUserCheck size={14} /> Owner Desk
+              </span>
+            </a>
+            {currentView === 'admin' && <span className="active-line"></span>}
           </li>
         </ul>
 
         {/* Action Buttons */}
         <div className="nav-actions">
-          <button className="icon-btn" aria-label="Favorites">
+          <button className="icon-btn" aria-label="Favorites" onClick={(e) => handleLinkClick(e, 'shop')}>
             <FiHeart size={20} />
           </button>
           
@@ -74,12 +105,40 @@ const Navbar = ({ cartCount = 0, onCartClick }) => {
             className="mobile-drawer"
           >
             <ul className="nav-items-mobile">
-              <li><a href="#home" onClick={() => setIsOpen(false)}>Home</a></li>
-              <li><a href="#menu" onClick={() => setIsOpen(false)}>Menu</a></li>
-              <li><a href="#customizer" onClick={() => setIsOpen(false)}>Bakery Lab</a></li>
-              <li><a href="#about" onClick={() => setIsOpen(false)}>Our Story</a></li>
               <li>
-                <button className="mobile-order-btn" onClick={() => { setIsOpen(false); onCartClick(); }}>Order Now</button>
+                <a 
+                  href="#home" 
+                  className={currentView === 'shop' ? 'active' : ''} 
+                  onClick={(e) => handleLinkClick(e, 'shop')}
+                >
+                  Bakery Lab
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#tracker" 
+                  className={currentView === 'tracker' ? 'active' : ''} 
+                  onClick={(e) => handleLinkClick(e, 'tracker')}
+                >
+                  Track Order
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="#admin" 
+                  className={currentView === 'admin' ? 'active' : ''} 
+                  onClick={(e) => handleLinkClick(e, 'admin')}
+                >
+                  Owner Desk
+                </a>
+              </li>
+              <li>
+                <button 
+                  className="mobile-order-btn" 
+                  onClick={() => { setIsOpen(false); onCartClick(); }}
+                >
+                  Order Now
+                </button>
               </li>
             </ul>
           </motion.div>
@@ -90,4 +149,3 @@ const Navbar = ({ cartCount = 0, onCartClick }) => {
 };
 
 export default Navbar;
-
