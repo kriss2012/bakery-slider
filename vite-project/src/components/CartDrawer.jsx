@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './CartDrawer.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag, FiCheck } from 'react-icons/fi';
+import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag, FiCheck, FiCreditCard, FiSmartphone, FiUser, FiPhone, FiMapPin } from 'react-icons/fi';
 
 const CartDrawer = ({ 
   isOpen, 
@@ -9,12 +9,25 @@ const CartDrawer = ({
   cart, 
   onUpdateQuantity, 
   onRemoveItem, 
-  onCheckout, 
+  onCheckoutSuccess, // Callback with placed order object
   themeColor = '#5c2e1a', 
   accentColor = '#a1673f' 
 }) => {
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
-  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  // Checkout stages: 'cart' -> 'details' -> 'upi-gateway'
+  const [checkoutStage, setCheckoutStage] = useState('cart');
+  
+  // Checkout Form State
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('COD'); // COD or UPI
+  
+  // States for UPI simulation
+  const [isUpiVerifying, setIsUpiVerifying] = useState(false);
+
+  // States for API requests
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const items = cart?.items || [];
   const subtotal = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -22,18 +35,74 @@ const CartDrawer = ({
   const shipping = subtotal > 20 || subtotal === 0 ? 0 : 2.99;
   const total = subtotal + tax + shipping;
 
-  const handleCheckoutClick = async () => {
-    if (items.length === 0) return;
-    setIsCheckingOut(true);
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    await onCheckout();
-    setIsCheckingOut(false);
-    setCheckoutSuccess(true);
+  const handleDetailsSubmit = (e) => {
+    e.preventDefault();
+    if (!customerName || !customerPhone || !customerAddress) {
+      setErrorMessage('Please fill in all delivery details.');
+      return;
+    }
+    setErrorMessage('');
+    if (paymentMethod === 'UPI') {
+      setCheckoutStage('upi-gateway');
+    } else {
+      placeOrder('COD', 'Pending');
+    }
   };
 
-  const handleCloseSuccess = () => {
-    setCheckoutSuccess(false);
+  const placeOrder = async (method, payStatus) => {
+    setIsPlacingOrder(true);
+    setErrorMessage('');
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cartId: cart.cartId,
+          customerName,
+          customerPhone,
+          customerAddress,
+          paymentMethod: method,
+          paymentStatus: payStatus
+        })
+      });
+
+      if (res.ok) {
+        const order = await res.json();
+        // Reset states
+        setCheckoutStage('cart');
+        setCustomerName('');
+        setCustomerPhone('');
+        setCustomerAddress('');
+        setPaymentMethod('COD');
+        // Notify parent
+        onCheckoutSuccess(order);
+      } else {
+        const errData = await res.json();
+        setErrorMessage(errData.error || 'Failed to place order. Check stock levels.');
+        // If stock issue, go back to cart
+        setCheckoutStage('cart');
+      }
+    } catch (err) {
+      console.error(err);
+      setErrorMessage('Connection failed. Please try again.');
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  const simulateUpiPayment = async () => {
+    setIsUpiVerifying(true);
+    // Simulate gateway handshakes
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsUpiVerifying(false);
+    // Place order as Paid
+    await placeOrder('UPI', 'Paid');
+  };
+
+  const handleCloseClick = () => {
+    // Reset stage
+    setCheckoutStage('cart');
+    setErrorMessage('');
     onClose();
   };
 
@@ -55,7 +124,7 @@ const CartDrawer = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={checkoutSuccess ? handleCloseSuccess : onClose}
+            onClick={handleCloseClick}
           />
 
           {/* Drawer container */}
@@ -66,44 +135,31 @@ const CartDrawer = ({
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           >
-            {checkoutSuccess ? (
-              /* Success Panel */
-              <motion.div 
-                className="checkout-success-panel"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <div className="success-icon-circle" style={{ backgroundColor: themeColor }}>
-                  <FiCheck size={40} color="#fff" />
-                </div>
-                <h3 className="success-title" style={{ color: themeColor }}>Order Confirmed!</h3>
-                <p className="success-message">
-                  Your delicious treats are being freshly prepared in the Bakery Lab. We'll notify you when they are ready.
-                </p>
-                <button 
-                  className="success-close-btn"
-                  onClick={handleCloseSuccess}
-                  style={{ backgroundColor: themeColor }}
-                >
-                  Continue Browsing
-                </button>
-              </motion.div>
-            ) : (
-              /* Main Cart Panel */
-              <div className="cart-content-flex">
-                {/* Header */}
-                <div className="cart-header">
-                  <div className="cart-header-title">
-                    <FiShoppingBag size={22} style={{ color: themeColor }} />
-                    <span className="cart-title-text" style={{ color: themeColor }}>Your Cart</span>
-                    <span className="cart-header-count">{items.length}</span>
-                  </div>
-                  <button className="cart-close-btn" onClick={onClose} aria-label="Close Cart">
-                    <FiX size={24} />
-                  </button>
-                </div>
+            {/* Header */}
+            <div className="cart-header">
+              <div className="cart-header-title">
+                <FiShoppingBag size={22} style={{ color: themeColor }} />
+                <span className="cart-title-text" style={{ color: themeColor }}>
+                  {checkoutStage === 'cart' && 'Your Sweet Basket'}
+                  {checkoutStage === 'details' && 'Delivery Info'}
+                  {checkoutStage === 'upi-gateway' && 'UPI Online Checkout'}
+                </span>
+                {checkoutStage === 'cart' && <span className="cart-header-count">{items.length}</span>}
+              </div>
+              <button className="cart-close-btn" onClick={handleCloseClick} aria-label="Close Cart">
+                <FiX size={24} />
+              </button>
+            </div>
 
-                {/* Items list */}
+            {errorMessage && (
+              <div className="cart-error-banner">
+                {errorMessage}
+              </div>
+            )}
+
+            {/* STAGE 1: SHOPPING CART LIST */}
+            {checkoutStage === 'cart' && (
+              <div className="cart-content-flex">
                 <div className="cart-items-wrapper">
                   {items.length === 0 ? (
                     <div className="empty-cart-message">
@@ -144,7 +200,6 @@ const CartDrawer = ({
                               <button 
                                 className="qty-btn"
                                 onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                                disabled={item.quantity <= 1}
                               >
                                 <FiMinus size={12} />
                               </button>
@@ -171,7 +226,6 @@ const CartDrawer = ({
                   )}
                 </div>
 
-                {/* Footer section (Summary + checkout button) */}
                 {items.length > 0 && (
                   <div className="cart-footer">
                     <div className="summary-row">
@@ -188,11 +242,6 @@ const CartDrawer = ({
                         {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
                       </span>
                     </div>
-                    {shipping > 0 && (
-                      <div className="shipping-hint">
-                        Add ${(20 - subtotal).toFixed(2)} more for free shipping!
-                      </div>
-                    )}
                     
                     <div className="divider-line" />
                     
@@ -203,26 +252,162 @@ const CartDrawer = ({
 
                     <button 
                       className="checkout-btn" 
-                      onClick={handleCheckoutClick}
-                      disabled={isCheckingOut}
+                      onClick={() => setCheckoutStage('details')}
                       style={{ 
                         backgroundColor: themeColor,
                         boxShadow: `0 8px 25px ${themeColor}30` 
                       }}
                     >
-                      {isCheckingOut ? (
-                        <div className="loading-dots">
-                          <span>Processing</span>
-                          <span className="dot">.</span>
-                          <span className="dot">.</span>
-                          <span className="dot">.</span>
-                        </div>
-                      ) : (
-                        `Checkout - $${total.toFixed(2)}`
-                      )}
+                      Proceed to Checkout
                     </button>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* STAGE 2: CUSTOMER DELIVERY DETAILS */}
+            {checkoutStage === 'details' && (
+              <div className="cart-content-flex">
+                <form className="checkout-details-form" onSubmit={handleDetailsSubmit}>
+                  <div className="form-group-field">
+                    <label><FiUser size={16} /> Customer Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. John Doe" 
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group-field">
+                    <label><FiPhone size={16} /> Contact Number</label>
+                    <input 
+                      type="tel" 
+                      placeholder="e.g. +1 234 567 8900" 
+                      value={customerPhone}
+                      onChange={(e) => setCustomerPhone(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="form-group-field">
+                    <label><FiMapPin size={16} /> Delivery Address</label>
+                    <textarea 
+                      placeholder="Street address, apartment, city, zip code..." 
+                      value={customerAddress}
+                      onChange={(e) => setCustomerAddress(e.target.value)}
+                      rows="3"
+                      required
+                    />
+                  </div>
+
+                  <div className="payment-method-selection">
+                    <span className="section-small-title">Select Payment Mode</span>
+                    <div className="payment-options-grid">
+                      <div 
+                        className={`payment-opt-card ${paymentMethod === 'COD' ? 'selected' : ''}`}
+                        onClick={() => setPaymentMethod('COD')}
+                        style={{ '--pay-theme': themeColor }}
+                      >
+                        <FiDollarSign size={20} />
+                        <div>
+                          <strong>Pay on Delivery</strong>
+                          <span>Cash or card on arrival</span>
+                        </div>
+                      </div>
+
+                      <div 
+                        className={`payment-opt-card ${paymentMethod === 'UPI' ? 'selected' : ''}`}
+                        onClick={() => setPaymentMethod('UPI')}
+                        style={{ '--pay-theme': themeColor }}
+                      >
+                        <FiSmartphone size={20} />
+                        <div>
+                          <strong>UPI QR Payment</strong>
+                          <span>Instant verification</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="checkout-details-footer">
+                    <button 
+                      type="button" 
+                      className="details-back-btn"
+                      onClick={() => setCheckoutStage('cart')}
+                    >
+                      Back to Cart
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="details-submit-btn"
+                      disabled={isPlacingOrder}
+                      style={{ backgroundColor: themeColor }}
+                    >
+                      {isPlacingOrder ? (
+                        'Processing order...'
+                      ) : paymentMethod === 'UPI' ? (
+                        'Proceed to Pay'
+                      ) : (
+                        `Confirm Order - $${total.toFixed(2)}`
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* STAGE 3: UPI SIMULATION GATEWAY */}
+            {checkoutStage === 'upi-gateway' && (
+              <div className="cart-content-flex upi-gateway-flex">
+                <div className="upi-info-card glass-card">
+                  <span className="upi-merchant">DVBAKES CAFE PORTAL</span>
+                  <h3 className="upi-amount">${total.toFixed(2)}</h3>
+                  <p className="upi-meta">Merchant UPI ID: <span className="upi-id">dvbakes@ybl</span></p>
+                </div>
+
+                <div className="upi-qr-scanner-box">
+                  <div className="qr-image-placeholder">
+                    {/* Simulated elegant QR code visual */}
+                    <div className="qr-pattern-box">
+                      <div className="qr-anchor top-left" />
+                      <div className="qr-anchor top-right" />
+                      <div className="qr-anchor bottom-left" />
+                      <div className="qr-grid-dots" />
+                    </div>
+                    <div className="qr-scanning-laser" style={{ backgroundColor: themeColor }} />
+                  </div>
+                  <p className="qr-caption">Scan QR code using Google Pay, PhonePe, Paytm, or BHIM app</p>
+                </div>
+
+                <div className="upi-sim-actions">
+                  <button 
+                    className="upi-cancel-btn"
+                    onClick={() => setCheckoutStage('details')}
+                    disabled={isUpiVerifying}
+                  >
+                    Cancel
+                  </button>
+                  
+                  <button 
+                    className="upi-pay-btn"
+                    onClick={simulateUpiPayment}
+                    disabled={isUpiVerifying}
+                    style={{ backgroundColor: themeColor }}
+                  >
+                    {isUpiVerifying ? (
+                      <div className="loading-dots">
+                        <span>Verifying</span>
+                        <span className="dot">.</span>
+                        <span className="dot">.</span>
+                        <span className="dot">.</span>
+                      </div>
+                    ) : (
+                      'Simulate Successful Payment'
+                    )}
+                  </button>
+                </div>
               </div>
             )}
           </motion.div>
