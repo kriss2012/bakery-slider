@@ -227,12 +227,51 @@
   border-radius: 3px;
 }
 
+/* Stock Badges and Status styling */
+.stock-status-wrapper {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.stock-indicator-badge {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stock-indicator-badge.in-stock {
+  background-color: rgba(46, 204, 113, 0.1);
+  color: #27ae60;
+}
+
+.stock-indicator-badge.low-stock {
+  background-color: rgba(243, 156, 18, 0.1);
+  color: #d35400;
+  animation: stockPulse 2s infinite ease-in-out;
+}
+
+.stock-indicator-badge.sold-out {
+  background-color: rgba(231, 76, 60, 0.1);
+  color: #c0392b;
+}
+
+@keyframes stockPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
 /* Price & Buy Button */
 .order-actions {
   display: flex;
   align-items: center;
   gap: 2rem;
-  margin-top: 2rem;
+  margin-top: 1.2rem;
 }
 
 .price-tag {
@@ -253,9 +292,16 @@
   transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s;
 }
 
-.hero-btn:hover {
+.hero-btn:hover:not(:disabled) {
   transform: translateY(-3px);
   box-shadow: 0 12px 25px rgba(0, 0, 0, 0.18);
+}
+
+.hero-btn:disabled {
+  opacity: 0.65;
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
 }
 
 
