@@ -132,6 +132,88 @@ const FALLBACK_SLIDES = [
 ];
 
 const Hero = () => {
+  // Web Audio API synthesizer for micro-interactions
+  const playSynthSound = (type) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+
+      if (type === 'click') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        gain.gain.setValueAtTime(0.03, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+      } else if (type === 'bubble') {
+        // Soft bubble-pop trigger sound
+        const playBubble = (time, pitch) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(pitch, ctx.currentTime + time);
+          osc.frequency.exponentialRampToValueAtTime(pitch * 1.8, ctx.currentTime + time + 0.12);
+          gain.gain.setValueAtTime(0.05, ctx.currentTime + time);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + time + 0.12);
+          osc.start(ctx.currentTime + time);
+          osc.stop(ctx.currentTime + time + 0.12);
+        };
+        playBubble(0, 400);
+        playBubble(0.06, 500);
+        playBubble(0.12, 650);
+      } else if (type === 'pop') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+      } else if (type === 'slide') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(450, ctx.currentTime + 0.25);
+        gain.gain.setValueAtTime(0.02, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.25);
+      } else if (type === 'success') {
+        const playNote = (freq, start, duration) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime + start);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
+          osc.start(ctx.currentTime + start);
+          osc.stop(ctx.currentTime + start + duration);
+        };
+        playNote(523.25, 0, 0.12);
+        playNote(659.25, 0.06, 0.12);
+        playNote(783.99, 0.12, 0.12);
+        playNote(987.77, 0.18, 0.22);
+      }
+    } catch (e) {
+      console.warn("Web Audio failed to execute:", e);
+    }
+  };
+
   const [products, setProducts] = useState(FALLBACK_SLIDES);
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
@@ -230,12 +312,14 @@ const Hero = () => {
   };
 
   const handleNext = () => {
+    playSynthSound('slide');
     setDirection(1);
     setIndex((prev) => (prev + 1) % products.length);
     resetToppings();
   };
 
   const handlePrev = () => {
+    playSynthSound('slide');
     setDirection(-1);
     setIndex((prev) => (prev - 1 + products.length) % products.length);
     resetToppings();
@@ -256,6 +340,7 @@ const Hero = () => {
   };
 
   const toggleTopping = (topping) => {
+    playSynthSound('pop');
     setActiveToppings((prev) => {
       const nextState = !prev[topping];
       
@@ -305,6 +390,7 @@ const Hero = () => {
   // Cart API Integration
   const handleOrder = async () => {
     if (activeSlide.stock === 0) return;
+    playSynthSound('bubble');
     try {
       const res = await fetch('/api/cart', {
         method: 'POST',
@@ -385,10 +471,12 @@ const Hero = () => {
     // Switch to tracker view and close drawer
     setView('tracker');
     setCartOpen(false);
+    playSynthSound('success');
   };
 
   // Switch view helper (refreshes product data when returning to shop)
   const handleViewChange = (newView) => {
+    playSynthSound('click');
     setView(newView);
     if (newView === 'shop') {
       fetchProducts();
