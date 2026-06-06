@@ -518,28 +518,54 @@ const Hero = () => {
   const renderViewContent = () => {
     if (view === 'admin') {
       return (
-        <AdminPortal 
-          onBackToShop={() => handleViewChange('shop')} 
-          themeColor={activeSlide.themeColor} 
-          accentColor={activeSlide.accentColor} 
-        />
+        <motion.div
+          key="admin"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -30 }}
+          transition={{ duration: 0.4, ease: 'easeInOut' }}
+          style={{ width: '100%' }}
+        >
+          <AdminPortal 
+            onBackToShop={() => handleViewChange('shop')} 
+            themeColor={activeSlide.themeColor} 
+            accentColor={activeSlide.accentColor} 
+          />
+        </motion.div>
       );
     }
 
     if (view === 'tracker') {
       return (
-        <OrderTracker 
-          orderId={activeOrderId} 
-          onBackToShop={() => handleViewChange('shop')} 
-          themeColor={activeSlide.themeColor} 
-          accentColor={activeSlide.accentColor} 
-        />
+        <motion.div
+          key="tracker"
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.96 }}
+          transition={{ duration: 0.4, ease: 'easeInOut' }}
+          style={{ width: '100%' }}
+        >
+          <OrderTracker 
+            orderId={activeOrderId} 
+            onBackToShop={() => handleViewChange('shop')} 
+            themeColor={activeSlide.themeColor} 
+            accentColor={activeSlide.accentColor} 
+          />
+        </motion.div>
       );
     }
 
     // Default: 'shop' view slider layout
     return (
-      <div className="hero-grid-container">
+      <motion.div
+        key="shop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.4 }}
+        style={{ width: '100%' }}
+      >
+        <div className="hero-grid-container">
         
         {/* LEFT COLUMN: PRODUCT INFORMATION */}
         <div className="hero-left-panel">
@@ -942,6 +968,7 @@ const Hero = () => {
         </div>
 
       </div>
+      </motion.div>
     );
   };
 
@@ -959,7 +986,9 @@ const Hero = () => {
         onViewChange={handleViewChange}
       />
 
-      {renderViewContent()}
+      <AnimatePresence mode="wait">
+        {renderViewContent()}
+      </AnimatePresence>
 
       {/* Cart Slider Drawer Component */}
       <CartDrawer 
