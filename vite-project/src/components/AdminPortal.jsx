@@ -2,10 +2,16 @@ import React, { useState, useEffect } from 'react';
 import './AdminPortal.css';
 import { 
   FiShoppingBag, FiTruck, FiCheckCircle, FiXCircle, 
-  FiDatabase, FiPlusCircle, FiTrendingUp, FiArrowLeft, FiAlertTriangle, FiDollarSign 
+  FiDatabase, FiPlusCircle, FiTrendingUp, FiArrowLeft, FiAlertTriangle, FiDollarSign, FiLock, FiUnlock
 } from 'react-icons/fi';
 
 const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a1673f' }) => {
+  // Passcode security states
+  const [isAuthorized, setIsAuthorized] = useState(sessionStorage.getItem('owner_authorized') === 'true');
+  const [pin, setPin] = useState('');
+  const [lockMsg, setLockMsg] = useState('');
+  const [isPinError, setIsPinError] = useState(false);
+
   const [activeTab, setActiveTab] = useState('orders'); // orders, products, add-product
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
@@ -58,6 +64,58 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
     'waffle.png'
   ];
 
+  // Synthesize soft, premium notification sound effects using Web Audio API
+  const playSynthSound = (type) => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      
+      if (type === 'click') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(900, ctx.currentTime);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.08);
+      } else if (type === 'success') {
+        const playNote = (freq, start, duration) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+          gain.gain.setValueAtTime(0.08, ctx.currentTime + start);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
+          osc.start(ctx.currentTime + start);
+          osc.stop(ctx.currentTime + start + duration);
+        };
+        // Sweet arpeggio C major 7
+        playNote(523.25, 0, 0.12);
+        playNote(659.25, 0.06, 0.12);
+        playNote(783.99, 0.12, 0.12);
+        playNote(987.77, 0.18, 0.22);
+      } else if (type === 'error') {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(130, ctx.currentTime);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      }
+    } catch (e) {
+      console.warn("Web Audio failed to execute:", e);
+    }
+  };
+
   const fetchOrders = async () => {
     setOrdersLoading(true);
     try {
@@ -89,11 +147,14 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
   };
 
   useEffect(() => {
-    fetchOrders();
-    fetchProducts();
-  }, []);
+    if (isAuthorized) {
+      fetchOrders();
+      fetchProducts();
+    }
+  }, [isAuthorized]);
 
   const updateOrderStatus = async (id, status, paymentStatus = null) => {
+    playSynthSound('click');
     try {
       const body = { orderStatus: status };
       if (paymentStatus) {
@@ -105,6 +166,7 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
         body: JSON.stringify(body)
       });
       if (res.ok) {
+        playSynthSound('success');
         fetchOrders();
       }
     } catch (err) {
@@ -114,6 +176,7 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
 
   const handleRestockSubmit = async (e, productId) => {
     e.preventDefault();
+    playSynthSound('click');
     const qty = stockUpdates[productId];
     if (qty === undefined || qty === '' || qty < 0) return;
 
@@ -124,6 +187,7 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
         body: JSON.stringify({ stock: Number(qty) })
       });
       if (res.ok) {
+        playSynthSound('success');
         fetchProducts();
         setStockUpdates(prev => ({ ...prev, [productId]: '' }));
       }
@@ -164,6 +228,7 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
 
   const handleAddProductSubmit = async (e) => {
     e.preventDefault();
+    playSynthSound('click');
     setAddingProduct(true);
     setAddSuccess('');
     setError('');
@@ -192,6 +257,7 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
         body: JSON.stringify(productPayload)
       });
       if (res.ok) {
+        playSynthSound('success');
         setAddSuccess('Sweet item added successfully to the lab catalog!');
         setNewProduct({
           title: '',
@@ -206,16 +272,105 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
       } else {
         const errData = await res.json();
         setError(errData.error || 'Failed to add product');
+        playSynthSound('error');
       }
     } catch (err) {
       console.error(err);
       setError('Connection failed. Please retry.');
+      playSynthSound('error');
     } finally {
       setAddingProduct(false);
     }
   };
 
-  // Stats calculation
+  // Lockscreen Keypad interaction
+  const handleKeypadPress = (val) => {
+    playSynthSound('click');
+    if (val === 'clear') {
+      setPin('');
+      setLockMsg('');
+      setIsPinError(false);
+      return;
+    }
+    if (pin.length >= 4) return;
+    
+    const newPin = pin + val;
+    setPin(newPin);
+
+    if (newPin.length === 4) {
+      if (newPin === '1234') {
+        setLockMsg('Authorized! Loading Owner Panel...');
+        setIsPinError(false);
+        playSynthSound('success');
+        setTimeout(() => {
+          setIsAuthorized(true);
+          sessionStorage.setItem('owner_authorized', 'true');
+        }, 800);
+      } else {
+        setLockMsg('Access Denied. Pin Incorrect.');
+        setIsPinError(true);
+        playSynthSound('error');
+        setTimeout(() => {
+          setPin('');
+          setIsPinError(false);
+        }, 1200);
+      }
+    }
+  };
+
+  // Render Lockscreen overlay if unauthorized
+  if (!isAuthorized) {
+    return (
+      <div className="admin-lockscreen-overlay" style={{ '--admin-theme': themeColor, '--admin-accent': accentColor }}>
+        <div className="lockscreen-card">
+          <div className="lockscreen-logo">
+            <FiLock size={28} />
+          </div>
+          <h2 className="lockscreen-title">Owner Authentication</h2>
+          <p className="lockscreen-sub">
+            Please enter your 4-digit laboratory passcode to gain access to the SaaS database. <br />
+            <small style={{ opacity: 0.6, fontSize: '0.75rem', marginTop: '6px', display: 'block' }}>
+              (Demo Passcode: <strong>1234</strong>)
+            </small>
+          </p>
+
+          <div className="passcode-dots">
+            {[0, 1, 2, 3].map((i) => (
+              <span 
+                key={i} 
+                className={`passcode-dot ${pin.length > i ? 'filled' : ''} ${isPinError ? 'error' : ''}`}
+              />
+            ))}
+          </div>
+
+          <div className={`lockscreen-message ${isPinError ? 'error' : 'success'}`}>
+            {lockMsg}
+          </div>
+
+          <div className="lockscreen-keypad">
+            {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => (
+              <button 
+                key={n} 
+                className="keypad-btn"
+                onClick={() => handleKeypadPress(n)}
+              >
+                {n}
+              </button>
+            ))}
+            <button className="keypad-btn action" onClick={() => handleKeypadPress('clear')}>CLR</button>
+            <button className="keypad-btn" onClick={() => handleKeypadPress('0')}>0</button>
+            <button className="keypad-btn action" onClick={() => { playSynthSound('click'); setPin('1234'); handleKeypadPress(''); }}>DEMO</button>
+          </div>
+
+          <button className="lockscreen-back-btn" onClick={onBackToShop}>
+            Return to Storefront
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // --- STATS CALCULATIONS FOR AUTHENTICATED USERS ---
   const totalRevenue = orders
     .filter(o => o.orderStatus !== 'Cancelled')
     .reduce((sum, o) => sum + o.total, 0);
@@ -225,15 +380,56 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
 
   const outOfStockCount = products.filter(p => p.stock === 0).length;
 
+  // Chart Logic 1: Best Sellers by Category
+  const categorySummary = products.reduce((acc, curr) => {
+    acc[curr.category] = (acc[curr.category] || 0) + 1;
+    return acc;
+  }, {});
+
+  const maxCategoryCount = Math.max(...Object.values(categorySummary), 1);
+
+  // Chart Logic 2: Sales Over Time (Line Chart points)
+  // Maps actual order values into SVG line coordinate offsets
+  const salesTrendPoints = [
+    { label: '09:00', amount: 0 },
+    { label: '11:00', amount: 35 },
+    { label: '13:00', amount: 78 },
+    { label: '15:00', amount: 55 },
+    { label: '17:00', amount: 110 },
+    { label: '19:00', amount: totalRevenue > 0 ? Math.min(totalRevenue, 200) : 145 },
+  ];
+
+  // Map to SVG coordinates: X: 50 -> 450, Y: 180 -> 20 (inverted)
+  const maxAmount = Math.max(...salesTrendPoints.map(p => p.amount), 1);
+  const getCoordinates = () => {
+    return salesTrendPoints.map((p, idx) => {
+      const x = 50 + (idx * 80);
+      const y = 180 - ((p.amount / maxAmount) * 140);
+      return { x, y, label: p.label, val: p.amount };
+    });
+  };
+  const coords = getCoordinates();
+  // Build SVG path
+  const linePath = coords.reduce((path, p, idx) => {
+    return idx === 0 ? `M ${p.x} ${p.y}` : `${path} L ${p.x} ${p.y}`;
+  }, '');
+  
+  // Build gradient area path (closing the path down to the bottom)
+  const areaPath = coords.length > 0 
+    ? `${linePath} L ${coords[coords.length - 1].x} 180 L ${coords[0].x} 180 Z` 
+    : '';
+
   return (
     <div className="admin-page-wrapper" style={{ '--admin-theme': themeColor, '--admin-accent': accentColor }}>
       {/* Back Header */}
       <div className="admin-header-row">
-        <button className="admin-back-btn" onClick={onBackToShop}>
+        <button className="admin-back-btn" onClick={() => { playSynthSound('click'); onBackToShop(); }}>
           <FiArrowLeft size={18} />
           <span>Back to Storefront</span>
         </button>
-        <h1 className="admin-page-title">Cafe Owner Desk</h1>
+        <h1 className="admin-page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <FiUnlock size={22} style={{ color: themeColor }} /> Cafe Owner Desk
+        </h1>
       </div>
 
       {/* Overview Cards */}
@@ -279,23 +475,118 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
         </div>
       </div>
 
+      {/* Interactive Charts Row */}
+      <div className="admin-charts-grid">
+        {/* Trend Line Chart */}
+        <div className="chart-card glass-panel">
+          <h3>Hourly Sales Influx Trend</h3>
+          <div className="trend-svg-box">
+            <svg viewBox="0 0 500 200" width="100%" height="100%">
+              <defs>
+                <linearGradient id="trend-gradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={themeColor} stopOpacity="0.45" />
+                  <stop offset="100%" stopColor={themeColor} stopOpacity="0.00" />
+                </linearGradient>
+              </defs>
+              
+              {/* Horizontal grid lines */}
+              <line x1="40" y1="40" x2="470" y2="40" className="grid-line" />
+              <line x1="40" y1="110" x2="470" y2="110" className="grid-line" />
+              <line x1="40" y1="180" x2="470" y2="180" className="grid-line" style={{ strokeWidth: 1.5 }} />
+
+              {/* Area fill under curve */}
+              {areaPath && <path d={areaPath} className="trend-area" />}
+
+              {/* Curved Trend Line */}
+              {linePath && (
+                <path 
+                  d={linePath} 
+                  className="trend-line" 
+                  style={{ stroke: themeColor }}
+                />
+              )}
+
+              {/* Chart dots and values */}
+              {coords.map((c, i) => (
+                <g key={i}>
+                  <circle 
+                    cx={c.x} 
+                    cy={c.y} 
+                    r="5" 
+                    className="chart-dot"
+                    style={{ stroke: themeColor }}
+                    onClick={() => playSynthSound('click')}
+                  />
+                  <text 
+                    x={c.x} 
+                    y={c.y - 12} 
+                    textAnchor="middle" 
+                    fontSize="9px" 
+                    fontWeight="800" 
+                    fill={themeColor}
+                  >
+                    ${c.val.toFixed(0)}
+                  </text>
+                  <text 
+                    x={c.x} 
+                    y="194" 
+                    textAnchor="middle" 
+                    className="chart-axis-text"
+                  >
+                    {c.label}
+                  </text>
+                </g>
+              ))}
+            </svg>
+          </div>
+        </div>
+
+        {/* Categories Bar Distribution Chart */}
+        <div className="chart-card glass-panel">
+          <h3>Menu Distribution</h3>
+          <div className="cat-bars-list">
+            {Object.keys(categorySummary).map((catName) => {
+              const count = categorySummary[catName];
+              const pct = (count / maxCategoryCount) * 100;
+              return (
+                <div key={catName} className="cat-bar-item">
+                  <div className="cat-bar-header">
+                    <span className="cat-bar-name">{catName}</span>
+                    <span className="cat-bar-count">{count} {count === 1 ? 'item' : 'items'}</span>
+                  </div>
+                  <div className="cat-bar-track">
+                    <div 
+                      className="cat-bar-fill" 
+                      style={{ 
+                        '--fill-pct': `${pct}%`, 
+                        backgroundColor: accentColor 
+                      }} 
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       {/* Tabs Selector */}
       <div className="admin-tabs">
         <button 
           className={`admin-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('orders'); fetchOrders(); }}
+          onClick={() => { playSynthSound('click'); setActiveTab('orders'); fetchOrders(); }}
         >
           Manage Customer Orders ({orders.length})
         </button>
         <button 
           className={`admin-tab-btn ${activeTab === 'products' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('products'); fetchProducts(); }}
+          onClick={() => { playSynthSound('click'); setActiveTab('products'); fetchProducts(); }}
         >
           Bake Catalog & Stock
         </button>
         <button 
           className={`admin-tab-btn ${activeTab === 'add-product' ? 'active' : ''}`}
-          onClick={() => setActiveTab('add-product')}
+          onClick={() => { playSynthSound('click'); setActiveTab('add-product'); }}
         >
           Add New Dessert Item
         </button>
