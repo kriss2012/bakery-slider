@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './CartDrawer.css';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag, FiCheck, FiCreditCard, FiSmartphone, FiUser, FiPhone, FiMapPin } from 'react-icons/fi';
+import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag, FiCheck, FiCreditCard, FiSmartphone, FiUser, FiPhone, FiMapPin, FiDollarSign } from 'react-icons/fi';
 
 const CartDrawer = ({ 
   isOpen, 
