@@ -19,7 +19,7 @@
   <packaging>jar</packaging>
 
   <properties>
-    <java.version>21</java.version>
+    <java.version>17</java.version>
     <jjwt.version>0.12.5</jjwt.version>
   </properties>
 
