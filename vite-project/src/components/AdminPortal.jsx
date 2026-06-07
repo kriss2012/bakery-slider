@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './AdminPortal.css';
+import DBMonitor from './DBMonitor';
 import { 
   FiShoppingBag, FiTruck, FiCheckCircle, FiXCircle, 
-  FiDatabase, FiPlusCircle, FiTrendingUp, FiArrowLeft, FiAlertTriangle, FiDollarSign, FiLock, FiUnlock
+  FiDatabase, FiPlusCircle, FiTrendingUp, FiArrowLeft, FiAlertTriangle, FiDollarSign, FiLock, FiUnlock, FiActivity, FiServer
 } from 'react-icons/fi';
 
 const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a1673f' }) => {
@@ -116,13 +117,35 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
     }
   };
 
+  // Helper to get auth headers (JWT if Spring Boot, plain for Node.js)
+  const getHeaders = () => {
+    const token = sessionStorage.getItem('dvbakes_token');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    return headers;
+  };
+
+  // Detect which backend is active (Spring Boot port 8080 or Node port 5000)
+  const [apiBase, setApiBase] = useState('');
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/products')
+      .then(r => r.ok ? setApiBase('http://localhost:8080') : setApiBase(''))
+      .catch(() => setApiBase(''));
+  }, []);
+
   const fetchOrders = async () => {
     setOrdersLoading(true);
     try {
-      const res = await fetch('/api/orders');
+      const res = await fetch(`${apiBase}/api/orders`, { headers: getHeaders() });
       if (res.ok) {
         const data = await res.json();
-        setOrders(data);
+        // Parse items if they come as string (Node.js compat)
+        const parsed = data.map(o => ({
+          ...o,
+          items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items
+        }));
+        setOrders(parsed);
       }
     } catch (err) {
       console.error("Failed to fetch orders:", err);
@@ -134,10 +157,16 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
   const fetchProducts = async () => {
     setProductsLoading(true);
     try {
-      const res = await fetch('/api/products');
+      const res = await fetch(`${apiBase}/api/products`, { headers: getHeaders() });
       if (res.ok) {
         const data = await res.json();
-        setProducts(data);
+        const parsed = data.map(p => ({
+          ...p,
+          specs: typeof p.specs === 'string' ? JSON.parse(p.specs) : p.specs || [],
+          ingredients: typeof p.ingredients === 'string' ? JSON.parse(p.ingredients) : p.ingredients || [],
+          nutrition: typeof p.nutrition === 'string' ? JSON.parse(p.nutrition) : p.nutrition || []
+        }));
+        setProducts(parsed);
       }
     } catch (err) {
       console.error("Failed to fetch products:", err);
@@ -157,18 +186,13 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
     playSynthSound('click');
     try {
       const body = { orderStatus: status };
-      if (paymentStatus) {
-        body.paymentStatus = paymentStatus;
-      }
-      const res = await fetch(`/api/orders/${id}/status`, {
+      if (paymentStatus) body.paymentStatus = paymentStatus;
+      const res = await fetch(`${apiBase}/api/orders/${id}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(body)
       });
-      if (res.ok) {
-        playSynthSound('success');
-        fetchOrders();
-      }
+      if (res.ok) { playSynthSound('success'); fetchOrders(); }
     } catch (err) {
       console.error("Failed to update status:", err);
     }
@@ -179,11 +203,10 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
     playSynthSound('click');
     const qty = stockUpdates[productId];
     if (qty === undefined || qty === '' || qty < 0) return;
-
     try {
-      const res = await fetch(`/api/products/${productId}/stock`, {
+      const res = await fetch(`${apiBase}/api/products/${productId}/stock`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({ stock: Number(qty) })
       });
       if (res.ok) {
@@ -284,7 +307,7 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
   };
 
   // Lockscreen Keypad interaction
-  const handleKeypadPress = (val) => {
+  const handleKeypadPress = async (val) => {
     playSynthSound('click');
     if (val === 'clear') {
       setPin('');
@@ -298,6 +321,29 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
     setPin(newPin);
 
     if (newPin.length === 4) {
+      // Try Spring Boot JWT validation first, fallback to hardcoded
+      try {
+        const res = await fetch('http://localhost:8080/api/auth/validate-pin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passcode: newPin })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          sessionStorage.setItem('dvbakes_token', data.token);
+          setLockMsg('Spring Boot Auth Successful!');
+          setIsPinError(false);
+          playSynthSound('success');
+          setTimeout(() => {
+            setIsAuthorized(true);
+            sessionStorage.setItem('owner_authorized', 'true');
+          }, 800);
+          return;
+        }
+      } catch (e) {
+        // Spring Boot not running, use local fallback
+      }
+
       if (newPin === '1234') {
         setLockMsg('Authorized! Loading Owner Panel...');
         setIsPinError(false);
@@ -307,13 +353,10 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
           sessionStorage.setItem('owner_authorized', 'true');
         }, 800);
       } else {
-        setLockMsg('Access Denied. Pin Incorrect.');
+        setLockMsg('Access Denied. PIN Incorrect.');
         setIsPinError(true);
         playSynthSound('error');
-        setTimeout(() => {
-          setPin('');
-          setIsPinError(false);
-        }, 1200);
+        setTimeout(() => { setPin(''); setIsPinError(false); }, 1200);
       }
     }
   };
@@ -576,19 +619,26 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
           className={`admin-tab-btn ${activeTab === 'orders' ? 'active' : ''}`}
           onClick={() => { playSynthSound('click'); setActiveTab('orders'); fetchOrders(); }}
         >
-          Manage Customer Orders ({orders.length})
+          <FiShoppingBag size={14} /> Orders ({orders.length})
         </button>
         <button 
           className={`admin-tab-btn ${activeTab === 'products' ? 'active' : ''}`}
           onClick={() => { playSynthSound('click'); setActiveTab('products'); fetchProducts(); }}
         >
-          Bake Catalog & Stock
+          <FiDatabase size={14} /> Catalog & Stock
         </button>
         <button 
           className={`admin-tab-btn ${activeTab === 'add-product' ? 'active' : ''}`}
           onClick={() => { playSynthSound('click'); setActiveTab('add-product'); }}
         >
-          Add New Dessert Item
+          <FiPlusCircle size={14} /> Add Product
+        </button>
+        <button 
+          className={`admin-tab-btn db-monitor-tab ${activeTab === 'db-monitor' ? 'active' : ''}`}
+          onClick={() => { playSynthSound('click'); setActiveTab('db-monitor'); }}
+        >
+          <FiActivity size={14} /> <span className="db-tab-label">Live DB Monitor</span>
+          <span className="db-tab-badge">Spring Boot</span>
         </button>
       </div>
 
@@ -904,6 +954,13 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {/* DB MONITOR TAB */}
+        {activeTab === 'db-monitor' && (
+          <div className="db-monitor-panel glass-panel">
+            <DBMonitor />
           </div>
         )}
       </div>
