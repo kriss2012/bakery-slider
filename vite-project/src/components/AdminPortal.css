@@ -761,3 +761,52 @@
 @keyframes fillBar {
   to { width: var(--fill-pct); }
 }
+
+/* ─── DB Monitor Tab ──────────────────────────────────────── */
+.admin-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.admin-tab-btn.db-monitor-tab {
+  position: relative;
+}
+
+.db-tab-label {
+  font-weight: 700;
+}
+
+.db-tab-badge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a78bfa, #22d3ee);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  animation: glow-badge 2s ease infinite;
+}
+
+@keyframes glow-badge {
+  0%, 100% { box-shadow: 0 0 6px #a78bfa80; }
+  50% { box-shadow: 0 0 14px #22d3ee80; }
+}
+
+/* DB Monitor panel dark override */
+.db-monitor-panel {
+  background: linear-gradient(135deg, #0a0f1e 0%, #111827 100%) !important;
+  border: 1px solid #1e293b !important;
+  border-radius: 28px;
+  padding: 2rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* Passcode dot error animation */
+.passcode-dot.error {
+  border-color: #e74c3c;
+  background: #e74c3c;
+  animation: shake 0.3s ease-in-out;
+}
+
