@@ -1,0 +1,451 @@
+/* ============================================================
+   DB Monitor - Premium Dark SaaS Styles
+   ============================================================ */
+
+.dbmon-wrapper {
+  padding: 0 0 2rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  color: #e2e8f0;
+  font-family: 'Inter', 'Outfit', sans-serif;
+}
+
+/* ─── Header ─────────────────────────────────────────────── */
+.dbmon-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #1e293b;
+}
+
+.dbmon-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dbmon-pulse-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+  animation: dbm-pulse 1.5s ease infinite;
+}
+
+@keyframes dbm-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+.dbmon-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a78bfa, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.dbmon-subtitle {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dbmon-ws-badge {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Status Bar ─────────────────────────────────────────── */
+.dbmon-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.dbmon-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 30px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.status-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: dbm-pulse 1.5s ease infinite;
+}
+
+.dbmon-pool-name {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 400;
+  margin-left: 8px;
+  border-left: 1px solid #334155;
+  padding-left: 8px;
+}
+
+.dbmon-db-type {
+  font-size: 0.78rem;
+  color: #64748b;
+  background: #0f172a;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+}
+
+.dbmon-last-update {
+  font-size: 0.72rem;
+  color: #475569;
+  margin-left: auto;
+}
+
+/* ─── Metrics Grid ───────────────────────────────────────── */
+.dbmon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.dbmon-card {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.dbmon-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--card-accent, #a78bfa);
+  opacity: 0.7;
+}
+
+.dbmon-card:hover {
+  border-color: var(--card-accent, #a78bfa);
+  box-shadow: 0 0 20px var(--card-accent, #a78bfa)20;
+}
+
+.dbmon-card-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dbmon-card-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dbmon-card-max {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #475569;
+  margin-left: 2px;
+}
+
+.dbmon-card-note {
+  font-size: 0.72rem;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.dbmon-sparkline {
+  margin-top: 4px;
+  opacity: 0.85;
+}
+
+.dbmon-util-ring {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+/* ─── Pool Bar ───────────────────────────────────────────── */
+.dbmon-poolbar-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.dbmon-poolbar-section h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+}
+
+.pool-bar-label-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.pool-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.pool-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.pool-dot.active { background: #4ade80; }
+.pool-dot.idle   { background: #22d3ee; }
+.pool-dot.free   { background: #1e293b; border: 1px solid #334155; }
+
+.pool-bar-track {
+  display: flex;
+  height: 24px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #0f172a;
+  border: 1px solid #1e293b;
+}
+
+.pool-bar-segment {
+  height: 100%;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pool-bar-segment.active-seg {
+  background: linear-gradient(90deg, #4ade80, #22c55e);
+  box-shadow: inset 0 0 12px #4ade8040;
+}
+
+.pool-bar-segment.idle-seg {
+  background: linear-gradient(90deg, #22d3ee, #0891b2);
+  box-shadow: inset 0 0 12px #22d3ee40;
+}
+
+.pool-bar-segment.free-seg {
+  background: #1e293b;
+}
+
+.pool-bar-ticks {
+  position: relative;
+  margin-top: 6px;
+  height: 14px;
+}
+
+.pool-bar-ticks span {
+  position: absolute;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: #475569;
+}
+
+/* ─── History Table ──────────────────────────────────────── */
+.dbmon-history-section {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.dbmon-history-section h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+}
+
+.dbmon-history-scroll {
+  overflow-x: auto;
+}
+
+.dbmon-history-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  font-size: 0.82rem;
+}
+
+.dbmon-history-table thead tr {
+  color: #64748b;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dbmon-history-table thead th {
+  padding: 6px 12px;
+  text-align: left;
+  border-bottom: 1px solid #1e293b;
+}
+
+.dbmon-history-table tbody tr {
+  background: #0f172a;
+  border-radius: 8px;
+}
+
+.dbmon-history-table tbody td {
+  padding: 8px 12px;
+}
+
+.dbmon-history-table .mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.hist-util-bar {
+  display: inline-block;
+  width: 80px;
+  height: 6px;
+  background: #1e293b;
+  border-radius: 3px;
+  overflow: hidden;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+.hist-util-bar div {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s;
+}
+
+/* ─── Server Health ──────────────────────────────────────── */
+.dbmon-server-health {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid #1e293b;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.dbmon-server-health h3 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+}
+
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.health-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.health-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.health-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.health-value.mono {
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.health-mem-bar-track {
+  height: 8px;
+  background: #0f172a;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #1e293b;
+}
+
+.health-mem-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s ease, background 0.5s;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.health-mem-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.68rem;
+  color: #475569;
+  margin-top: 4px;
+}
+
+/* ─── Loading State ──────────────────────────────────────── */
+.dbmon-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 4rem;
+  color: #64748b;
+}
+
+.dbmon-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #1e293b;
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.dbmon-loading small {
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+/* ─── Responsive ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .dbmon-grid { grid-template-columns: 1fr 1fr; }
+  .dbmon-header { flex-direction: column; }
+}
