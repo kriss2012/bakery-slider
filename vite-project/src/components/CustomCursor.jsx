@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import './CustomCursor.css';
 
+// Detect touch-primary devices (Android phones/tablets) — no cursor needed
+const isTouchDevice = () =>
+  typeof window !== 'undefined' &&
+  (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window);
+
 const CustomCursor = () => {
   const [cursorType, setCursorType] = useState('default');
   const [cursorText, setCursorText] = useState('');
@@ -66,6 +71,8 @@ const CustomCursor = () => {
     };
   }, [isVisible, cursorX, cursorY]);
 
+  // Don't render custom cursor on touch-primary devices (Android)
+  if (isTouchDevice()) return null;
   if (!isVisible) return null;
 
   return (
