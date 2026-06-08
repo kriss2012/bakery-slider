@@ -22,6 +22,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -31,6 +32,8 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent double-tap zoom on Android */
+  touch-action: manipulation;
 }
 
 /* Custom Scrollbar */
@@ -71,4 +74,36 @@ a {
   a, button, [role="button"], .arrow-circle, .thumbnail-card, .tab-btn, .topping-toggle {
     cursor: none !important;
   }
+}
+
+/* ── Android / Mobile Global Helpers ── */
+@media (max-width: 767px) {
+  /* Ensure images never overflow */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Enforce readable minimum font size */
+  body {
+    font-size: 16px;
+  }
+
+  /* Make all buttons touch-friendly */
+  button, a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ── Thin scrollbar on mobile ── */
+@media (max-width: 767px) {
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
 }
