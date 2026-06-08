@@ -1,6 +1,6 @@
 # ─── Java / Maven ───────────────────────────────────────────
-# Prevents large JAR files from blocking GitHub pushes (100MB limit)
-spring-backend/target/
+# Entire spring-backend folder excluded (deploy separately on Render)
+spring-backend/
 backend/node_modules/
 
 # SQLite database files (runtime data, not source code)
