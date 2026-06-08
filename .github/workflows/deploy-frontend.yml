@@ -6,8 +6,6 @@ on:
     paths:
       - 'vite-project/**'
       - '.github/workflows/deploy-frontend.yml'
-
-  # Allow manual run from Actions tab
   workflow_dispatch:
 
 permissions:
@@ -15,7 +13,6 @@ permissions:
   pages: write
   id-token: write
 
-# Only one deployment at a time
 concurrency:
   group: pages
   cancel-in-progress: false
@@ -45,9 +42,10 @@ jobs:
       - name: Build production bundle
         run: npm run build:prod
         env:
-          # Point frontend to your Render backend
-          # IMPORTANT: Update this to your actual Render service URL!
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          # Render backend URL — set in GitHub repo Settings → Secrets → VITE_API_URL
+          VITE_API_URL: https://dvbakes-backend-1.onrender.com
+          # GitHub Pages base path (must match repo name)
+          VITE_BASE_URL: /bakery-slider/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
