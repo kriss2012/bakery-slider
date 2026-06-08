@@ -1,5 +1,6 @@
 .tracker-page-wrapper {
   min-height: 100vh;
+  min-height: 100dvh;
   padding: 80px 5% 40px 5%;
   font-family: var(--font-body);
   color: var(--color-dark);
@@ -504,4 +505,131 @@
 .status-cancellation-banner p {
   font-size: 0.95rem;
   line-height: 1.4;
+}
+
+/* ── Android Mobile ── */
+@media (max-width: 767px) {
+  .tracker-page-wrapper {
+    padding: 70px 4% 30px 4%;
+    gap: 20px;
+  }
+  .tracker-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .tracker-back-btn {
+    align-self: flex-start;
+    padding: 10px 18px;
+    min-height: 48px;
+  }
+  .tracker-search-form {
+    max-width: 100%;
+  }
+  .tracker-search-input {
+    padding: 8px 14px;
+  }
+  .glass-panel {
+    padding: 22px 18px;
+    border-radius: 24px;
+  }
+  .tracker-side-card {
+    padding: 18px;
+  }
+  .status-main-heading {
+    font-size: 1.5rem;
+  }
+  .countdown-ring {
+    width: 130px;
+    height: 130px;
+  }
+  .countdown-time {
+    font-size: 1.5rem;
+  }
+  .step-icon-circle {
+    width: 40px;
+    height: 40px;
+  }
+  .step-label-text {
+    font-size: 0.78rem;
+  }
+  .step-desc-text {
+    font-size: 0.65rem;
+    max-width: 70px;
+  }
+  .stepper-line-bg {
+    top: 35px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tracker-page-wrapper {
+    padding: 65px 4% 24px 4%;
+  }
+  .glass-panel {
+    padding: 18px 14px;
+    border-radius: 20px;
+  }
+  .order-meta-info {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .status-countdown-section {
+    gap: 16px;
+  }
+  .countdown-ring {
+    width: 110px;
+    height: 110px;
+  }
+  .countdown-time {
+    font-size: 1.3rem;
+  }
+  .status-main-heading {
+    font-size: 1.3rem;
+  }
+  .status-sub-heading {
+    font-size: 0.88rem;
+  }
+  /* Stepper: compact icon circles */
+  .step-icon-circle {
+    width: 34px;
+    height: 34px;
+    border-width: 2px;
+  }
+  .step-label-text {
+    font-size: 0.7rem;
+    margin-top: 8px;
+  }
+  .step-desc-text {
+    display: none;
+  }
+  .stepper-line-bg {
+    top: 28px;
+    left: 8%;
+    right: 8%;
+  }
+  .basket-items-list {
+    max-height: 220px;
+  }
+}
+
+@media (max-width: 360px) {
+  .step-icon-circle {
+    width: 28px;
+    height: 28px;
+  }
+  .step-label-text {
+    font-size: 0.62rem;
+  }
+  .stepper-line-bg {
+    top: 24px;
+  }
+  .countdown-ring {
+    width: 95px;
+    height: 95px;
+  }
+  .countdown-time {
+    font-size: 1.1rem;
+  }
 }
