@@ -35,8 +35,10 @@ public class AdminController {
     /**
      * GET /api/admin/dashboard
      * Returns complete admin dashboard data in one call.
+     * Requires: ADMIN role JWT
      */
     @GetMapping("/dashboard")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AdminDashboardDto> getDashboard() {
         Double totalRevenue = orderRepository.getTotalRevenue();
         long activeOrders = orderRepository.countActiveOrders();
@@ -74,17 +76,21 @@ public class AdminController {
     /**
      * GET /api/admin/db-metrics
      * Returns current live database connection pool status.
+     * Requires: ADMIN role JWT
      */
     @GetMapping("/db-metrics")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DatabaseMetricsDto> getDbMetrics() {
         return ResponseEntity.ok(dbMonitorService.collectMetrics());
     }
 
     /**
      * GET /api/admin/server-health
-     * Returns server health summary.
+     * Returns server health summary (JVM memory, CPU, uptime).
+     * Requires: ADMIN role JWT
      */
     @GetMapping("/server-health")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Object>> getServerHealth() {
         Runtime rt = Runtime.getRuntime();
         long usedMemoryMB = (rt.totalMemory() - rt.freeMemory()) / (1024 * 1024);

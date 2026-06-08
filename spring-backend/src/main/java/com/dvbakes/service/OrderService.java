@@ -1,5 +1,6 @@
 package com.dvbakes.service;
 
+import com.dvbakes.dto.OrderResponseDto;
 import com.dvbakes.entity.Order;
 import com.dvbakes.entity.Product;
 import com.dvbakes.repository.OrderRepository;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // In-memory cart store (for demo; production: use Redis)
+    // In-memory cart store (for demo; production: use Redis or DB-backed sessions)
     private final Map<String, List<Map<String, Object>>> carts = new java.util.concurrent.ConcurrentHashMap<>();
 
     private String generateId() {
@@ -37,6 +39,43 @@ public class OrderService {
             id = "ORDER-" + num;
         } while (orderRepository.existsById(id));
         return id;
+    }
+
+    // ─── DTO CONVERSION ──────────────────────────────────────────────
+
+    /**
+     * Converts an Order entity to the frontend-friendly DTO.
+     * Safely parses the stored JSON items string back to a List so the
+     * React frontend receives a proper array, not a raw JSON string.
+     */
+    public OrderResponseDto toDto(Order order) {
+        List<Map<String, Object>> itemsList = new ArrayList<>();
+        try {
+            if (order.getItems() != null && !order.getItems().isBlank()) {
+                itemsList = objectMapper.readValue(order.getItems(),
+                        new TypeReference<List<Map<String, Object>>>() {});
+            }
+        } catch (Exception e) {
+            log.warn("Failed to parse items JSON for order {}: {}", order.getId(), e.getMessage());
+        }
+        return OrderResponseDto.builder()
+                .id(order.getId())
+                .cartId(order.getCartId())
+                .items(itemsList)
+                .subtotal(order.getSubtotal())
+                .tax(order.getTax())
+                .shipping(order.getShipping())
+                .total(order.getTotal())
+                .paymentMethod(order.getPaymentMethod())
+                .paymentStatus(order.getPaymentStatus())
+                .orderStatus(order.getOrderStatus())
+                .customerName(order.getCustomerName())
+                .customerPhone(order.getCustomerPhone())
+                .customerAddress(order.getCustomerAddress())
+                .timerExpiresAt(order.getTimerExpiresAt())
+                .createdAt(order.getCreatedAt())
+                .updatedAt(order.getUpdatedAt())
+                .build();
     }
 
     // ─── CART ────────────────────────────────────────────────────────
@@ -124,12 +163,14 @@ public class OrderService {
     // ─── ORDERS ──────────────────────────────────────────────────────
 
     @Transactional
-    public Order placeOrder(String cartId, String customerName, String customerPhone,
-                            String customerAddress, String paymentMethod, String paymentStatus) throws Exception {
+    public OrderResponseDto placeOrder(String cartId, String customerName, String customerPhone,
+                                       String customerAddress, String paymentMethod, String paymentStatus)
+            throws Exception {
+
         List<Map<String, Object>> cartItems = carts.getOrDefault(cartId, new ArrayList<>());
         if (cartItems.isEmpty()) throw new IllegalStateException("Cart is empty.");
 
-        // Validate & deduct stock
+        // Validate stock before any deduction
         for (Map<String, Object> item : cartItems) {
             String pid = (String) item.get("productId");
             int qty = (int) item.get("quantity");
@@ -141,6 +182,7 @@ public class OrderService {
             }
         }
 
+        // Deduct stock
         for (Map<String, Object> item : cartItems) {
             String pid = (String) item.get("productId");
             int qty = (int) item.get("quantity");
@@ -159,7 +201,7 @@ public class OrderService {
         double total = subtotal + tax + shipping;
 
         String orderId = generateOrderId();
-        String timerExpiresAt = Instant.now().plusSeconds(900).toString(); // 15 mins
+        String timerExpiresAt = Instant.now().plusSeconds(900).toString(); // 15 min window
 
         Order order = Order.builder()
                 .id(orderId)
@@ -180,30 +222,42 @@ public class OrderService {
                 .build();
 
         Order saved = orderRepository.save(order);
+        // Clear the server-side cart after successful order
         carts.put(cartId, new ArrayList<>());
 
         log.info("Order placed: {} by {} | Total: ${}", orderId, customerName, String.format("%.2f", total));
-        return saved;
+        return toDto(saved);
     }
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAllByOrderByCreatedAtDesc();
+    /**
+     * Returns all orders as DTOs with parsed items.
+     * Used by admin panel.
+     */
+    public List<OrderResponseDto> getAllOrders() {
+        return orderRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
     }
 
-    public Optional<Order> getOrderById(String id) {
-        return orderRepository.findById(id);
+    /**
+     * Returns a single order by ID as DTO.
+     * Used by public order tracker + admin.
+     */
+    public Optional<OrderResponseDto> getOrderById(String id) {
+        return orderRepository.findById(id).map(this::toDto);
     }
 
     @Transactional
-    public Order updateOrderStatus(String id, String orderStatus, String paymentStatus) {
+    public OrderResponseDto updateOrderStatus(String id, String orderStatus, String paymentStatus) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found: " + id));
 
-        if (orderStatus != null) order.setOrderStatus(orderStatus);
-        if (paymentStatus != null) order.setPaymentStatus(paymentStatus);
+        if (orderStatus != null && !orderStatus.isBlank()) order.setOrderStatus(orderStatus);
+        if (paymentStatus != null && !paymentStatus.isBlank()) order.setPaymentStatus(paymentStatus);
         order.setUpdatedAt(Instant.now().toString());
 
-        log.info("Order {} status updated: orderStatus={}, paymentStatus={}", id, orderStatus, paymentStatus);
-        return orderRepository.save(order);
+        log.info("Order {} updated — orderStatus={}, paymentStatus={}", id, orderStatus, paymentStatus);
+        return toDto(orderRepository.save(order));
     }
 }

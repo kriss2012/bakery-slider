@@ -1,12 +1,15 @@
 com\dvbakes\dto\AuthRequest$AuthRequestBuilder.class
 com\dvbakes\entity\ApiMetric$ApiMetricBuilder.class
+com\dvbakes\dto\OrderResponseDto.class
 com\dvbakes\entity\Order$OrderBuilder.class
+com\dvbakes\service\OrderService$1.class
 com\dvbakes\config\RateLimitFilter.class
 com\dvbakes\config\SecurityConfig.class
 com\dvbakes\service\ProductService.class
 com\dvbakes\service\OrderService.class
 com\dvbakes\controller\ProductController.class
 com\dvbakes\dto\AdminDashboardDto$AdminDashboardDtoBuilder.class
+com\dvbakes\config\GlobalExceptionHandler.class
 com\dvbakes\dto\AdminDashboardDto.class
 com\dvbakes\config\DataSeeder.class
 com\dvbakes\dto\AuthResponse$AuthResponseBuilder.class
@@ -21,6 +24,7 @@ com\dvbakes\dto\DatabaseMetricsDto$DatabaseMetricsDtoBuilder.class
 com\dvbakes\entity\ApiMetric.class
 com\dvbakes\repository\ApiMetricRepository.class
 com\dvbakes\service\DatabaseMonitorService.class
+com\dvbakes\dto\OrderResponseDto$OrderResponseDtoBuilder.class
 com\dvbakes\security\JwtAuthFilter.class
 com\dvbakes\DvBakesSaaSApplication.class
 com\dvbakes\dto\AuthResponse.class

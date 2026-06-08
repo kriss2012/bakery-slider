@@ -29,7 +29,12 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * POST /api/products  — Admin only
+     * Creates a new product in the catalog.
+     */
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> createProduct(@RequestBody Product product) {
         try {
             Product created = productService.createProduct(product);
@@ -39,7 +44,12 @@ public class ProductController {
         }
     }
 
+    /**
+     * PUT /api/products/{id}/stock  — Admin only
+     * Updates the stock level of a product.
+     */
     @PutMapping("/{id}/stock")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateStock(@PathVariable String id, @RequestBody Map<String, Object> body) {
         try {
             int stock = ((Number) body.get("stock")).intValue();
@@ -51,7 +61,12 @@ public class ProductController {
         }
     }
 
+    /**
+     * DELETE /api/products/{id}  — Admin only
+     * Soft-deletes a product (sets active=false).
+     */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteProduct(@PathVariable String id) {
         try {
             productService.deleteProduct(id);
@@ -61,12 +76,21 @@ public class ProductController {
         }
     }
 
+    /**
+     * GET /api/products/low-stock  — Admin only
+     * Returns products with stock below the given threshold.
+     */
     @GetMapping("/low-stock")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Product>> getLowStock(@RequestParam(defaultValue = "5") int threshold) {
         return ResponseEntity.ok(productService.getLowStockProducts(threshold));
     }
 
+    /**
+     * GET /api/products/out-of-stock  — Admin only
+     */
     @GetMapping("/out-of-stock")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Product>> getOutOfStock() {
         return ResponseEntity.ok(productService.getOutOfStockProducts());
     }
