@@ -1,3 +1,4 @@
+# ─── Node / Vite ───────────────────────────────────────────
 # Logs
 logs
 *.log
@@ -22,3 +23,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ─── Environment secrets (NEVER commit these!) ──────────────
+.env.production.local
+.env.local
+*.env.local
+
+# ─── Java / Maven ───────────────────────────────────────────
+# Maven build output — PREVENTS large JAR from being pushed to GitHub
+spring-backend/target/
+backend/node_modules/
+backend/.env
+
+# SQLite database files (data is ephemeral in dev, use Render disk in prod)
+*.db
+*.db-shm
+*.db-wal
+data/
+
+# Java class files
+*.class

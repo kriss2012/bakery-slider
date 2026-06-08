@@ -1,0 +1,57 @@
+# render.yaml — Render.com Deployment Configuration for DvBakes Backend
+# Deploy this file at root of repo. Render auto-detects it.
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: dvbakes-backend
+    runtime: java
+    region: oregon   # change to 'frankfurt' for EU users
+
+    # Build: Maven package, skip tests in CI for speed
+    buildCommand: cd spring-backend && mvn clean package -DskipTests -q
+
+    # Start the built JAR
+    startCommand: java -Dspring.profiles.active=prod -jar spring-backend/target/bakery-saas-backend-2.0.0.jar
+
+    # Render free tier — upgrade to Standard for always-on
+    plan: free
+
+    healthCheckPath: /actuator/health
+
+    envVars:
+      # Port — Render sets $PORT automatically, no need to hardcode
+      - key: PORT
+        value: "8080"
+
+      # ── Database ────────────────────────────────────────────────
+      # SQLite file path inside the Render persistent disk (optional)
+      # If you upgrade to PostgreSQL on Render, change DATABASE_URL and DRIVER
+      - key: DATABASE_URL
+        value: jdbc:sqlite:/data/bakery_saas.db
+      - key: DATABASE_DRIVER
+        value: org.sqlite.JDBC
+      - key: JPA_DIALECT
+        value: org.hibernate.community.dialect.SQLiteDialect
+
+      # ── Security (SET THESE AS SECRET ENV VARS IN RENDER DASHBOARD) ──
+      - key: JWT_SECRET
+        sync: false   # mark as secret — set in Render Dashboard
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_PASSCODE
+        sync: false
+
+      # ── CORS ────────────────────────────────────────────────────
+      # IMPORTANT: Replace with your actual GitHub Pages URL after deploying!
+      # Format: https://YOUR-USERNAME.github.io,https://yourdomain.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: "http://localhost:5173,http://localhost:4173,https://your-username.github.io"
+
+    # Persistent disk for SQLite DB file (optional, only on paid plans)
+    # disk:
+    #   name: dvbakes-data
+    #   mountPath: /data
+    #   sizeGB: 1

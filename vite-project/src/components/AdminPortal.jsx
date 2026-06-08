@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './AdminPortal.css';
 import DBMonitor from './DBMonitor';
+import { apiFetch, apiPost, apiPut, API_BASE } from '../api';
 import { 
   FiShoppingBag, FiTruck, FiCheckCircle, FiXCircle, 
   FiDatabase, FiPlusCircle, FiTrendingUp, FiArrowLeft, FiAlertTriangle, FiDollarSign, FiLock, FiUnlock, FiActivity, FiServer
@@ -117,7 +118,7 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
     }
   };
 
-  // Helper to get auth headers (JWT if Spring Boot, plain for Node.js)
+  // Helper to get auth headers (JWT if Spring Boot)
   const getHeaders = () => {
     const token = sessionStorage.getItem('dvbakes_token');
     const headers = { 'Content-Type': 'application/json' };
@@ -125,54 +126,33 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
     return headers;
   };
 
-  // Detect which backend is active (Spring Boot port 8080 or Node port 5000)
-  const [apiBase, setApiBase] = useState('');
-
-  useEffect(() => {
-    fetch('http://localhost:8080/api/products')
-      .then(r => r.ok ? setApiBase('http://localhost:8080') : setApiBase(''))
-      .catch(() => setApiBase(''));
-  }, []);
-
   const fetchOrders = async () => {
     setOrdersLoading(true);
-    try {
-      const res = await fetch(`${apiBase}/api/orders`, { headers: getHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        // Parse items if they come as string (Node.js compat)
-        const parsed = data.map(o => ({
-          ...o,
-          items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items
-        }));
-        setOrders(parsed);
-      }
-    } catch (err) {
-      console.error("Failed to fetch orders:", err);
-    } finally {
-      setOrdersLoading(false);
+    const { data } = await apiFetch('/api/orders');
+    if (data && Array.isArray(data)) {
+      // Parse items if they come as string (Node.js compat)
+      const parsed = data.map(o => ({
+        ...o,
+        items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items
+      }));
+      setOrders(parsed);
     }
+    setOrdersLoading(false);
   };
 
   const fetchProducts = async () => {
     setProductsLoading(true);
-    try {
-      const res = await fetch(`${apiBase}/api/products`, { headers: getHeaders() });
-      if (res.ok) {
-        const data = await res.json();
-        const parsed = data.map(p => ({
-          ...p,
-          specs: typeof p.specs === 'string' ? JSON.parse(p.specs) : p.specs || [],
-          ingredients: typeof p.ingredients === 'string' ? JSON.parse(p.ingredients) : p.ingredients || [],
-          nutrition: typeof p.nutrition === 'string' ? JSON.parse(p.nutrition) : p.nutrition || []
-        }));
-        setProducts(parsed);
-      }
-    } catch (err) {
-      console.error("Failed to fetch products:", err);
-    } finally {
-      setProductsLoading(false);
+    const { data } = await apiFetch('/api/products');
+    if (data && Array.isArray(data)) {
+      const parsed = data.map(p => ({
+        ...p,
+        specs: typeof p.specs === 'string' ? JSON.parse(p.specs) : p.specs || [],
+        ingredients: typeof p.ingredients === 'string' ? JSON.parse(p.ingredients) : p.ingredients || [],
+        nutrition: typeof p.nutrition === 'string' ? JSON.parse(p.nutrition) : p.nutrition || []
+      }));
+      setProducts(parsed);
     }
+    setProductsLoading(false);
   };
 
   useEffect(() => {
@@ -184,18 +164,14 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
 
   const updateOrderStatus = async (id, status, paymentStatus = null) => {
     playSynthSound('click');
-    try {
-      const body = { orderStatus: status };
-      if (paymentStatus) body.paymentStatus = paymentStatus;
-      const res = await fetch(`${apiBase}/api/orders/${id}/status`, {
-        method: 'PUT',
-        headers: getHeaders(),
-        body: JSON.stringify(body)
-      });
-      if (res.ok) { playSynthSound('success'); fetchOrders(); }
-    } catch (err) {
-      console.error("Failed to update status:", err);
-    }
+    const body = {};
+    if (status) body.orderStatus = status;
+    if (paymentStatus) body.paymentStatus = paymentStatus;
+    const { data } = await apiFetch(`/api/orders/${id}/status`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+    if (data) { playSynthSound('success'); fetchOrders(); }
   };
 
   const handleRestockSubmit = async (e, productId) => {
@@ -203,19 +179,14 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
     playSynthSound('click');
     const qty = stockUpdates[productId];
     if (qty === undefined || qty === '' || qty < 0) return;
-    try {
-      const res = await fetch(`${apiBase}/api/products/${productId}/stock`, {
-        method: 'PUT',
-        headers: getHeaders(),
-        body: JSON.stringify({ stock: Number(qty) })
-      });
-      if (res.ok) {
-        playSynthSound('success');
-        fetchProducts();
-        setStockUpdates(prev => ({ ...prev, [productId]: '' }));
-      }
-    } catch (err) {
-      console.error("Failed to update stock:", err);
+    const { data } = await apiFetch(`/api/products/${productId}/stock`, {
+      method: 'PUT',
+      body: JSON.stringify({ stock: Number(qty) }),
+    });
+    if (data) {
+      playSynthSound('success');
+      fetchProducts();
+      setStockUpdates(prev => ({ ...prev, [productId]: '' }));
     }
   };
 
@@ -273,36 +244,17 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
       bgText: newProduct.bgText.toUpperCase()
     };
 
-    try {
-      const res = await fetch('/api/products', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(productPayload)
-      });
-      if (res.ok) {
-        playSynthSound('success');
-        setAddSuccess('Sweet item added successfully to the lab catalog!');
-        setNewProduct({
-          title: '',
-          category: 'Gourmet Cupcake',
-          price: '',
-          stock: '',
-          description: '',
-          imageFile: 'cupcake.png',
-          bgText: 'SWEET'
-        });
-        fetchProducts();
-      } else {
-        const errData = await res.json();
-        setError(errData.error || 'Failed to add product');
-        playSynthSound('error');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Connection failed. Please retry.');
+    const { data, error } = await apiPost('/api/products', productPayload);
+    setAddingProduct(false);
+
+    if (data) {
+      playSynthSound('success');
+      setAddSuccess('Sweet item added successfully to the lab catalog!');
+      setNewProduct({ title: '', category: 'Gourmet Cupcake', price: '', stock: '', description: '', imageFile: 'cupcake.png', bgText: 'SWEET' });
+      fetchProducts();
+    } else {
+      setError(error || 'Failed to add product');
       playSynthSound('error');
-    } finally {
-      setAddingProduct(false);
     }
   };
 
@@ -321,29 +273,22 @@ const AdminPortal = ({ onBackToShop, themeColor = '#5c2e1a', accentColor = '#a16
     setPin(newPin);
 
     if (newPin.length === 4) {
-      // Try Spring Boot JWT validation first, fallback to hardcoded
-      try {
-        const res = await fetch('http://localhost:8080/api/auth/validate-pin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ passcode: newPin })
-        });
-        if (res.ok) {
-          const data = await res.json();
-          sessionStorage.setItem('dvbakes_token', data.token);
-          setLockMsg('Spring Boot Auth Successful!');
-          setIsPinError(false);
-          playSynthSound('success');
-          setTimeout(() => {
-            setIsAuthorized(true);
-            sessionStorage.setItem('owner_authorized', 'true');
-          }, 800);
-          return;
-        }
-      } catch (e) {
-        // Spring Boot not running, use local fallback
+      // Try backend JWT validation via the centralized apiFetch (works both in dev and prod)
+      const { data } = await apiPost('/api/auth/validate-pin', { passcode: newPin });
+      if (data?.token) {
+        sessionStorage.setItem('dvbakes_token', data.token);
+        localStorage.setItem('dvbakes_token', data.token);
+        setLockMsg('Authentication Successful!');
+        setIsPinError(false);
+        playSynthSound('success');
+        setTimeout(() => {
+          setIsAuthorized(true);
+          sessionStorage.setItem('owner_authorized', 'true');
+        }, 800);
+        return;
       }
 
+      // Fallback: local PIN check (for demo when backend is down)
       if (newPin === '1234') {
         setLockMsg('Authorized! Loading Owner Panel...');
         setIsPinError(false);

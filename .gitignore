@@ -1,0 +1,26 @@
+# ─── Java / Maven ───────────────────────────────────────────
+# Prevents large JAR files from blocking GitHub pushes (100MB limit)
+spring-backend/target/
+backend/node_modules/
+
+# SQLite database files (runtime data, not source code)
+*.db
+*.db-shm
+*.db-wal
+**/data/*.db
+
+# ─── Node / Frontend ────────────────────────────────────────
+vite-project/node_modules/
+vite-project/dist/
+
+# ─── Environment Secrets ─────────────────────────────────────
+.env.local
+.env.production.local
+*.env.local
+**/.env.local
+
+# ─── OS Files ────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.suo
+*.sw?

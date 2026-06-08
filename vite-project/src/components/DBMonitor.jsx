@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import './DBMonitor.css';
+import { API_BASE } from '../api';
 
 // Error Boundary to prevent the whole Admin from crashing
 class DBMonitorErrorBoundary extends React.Component {
@@ -43,7 +44,8 @@ const DBMonitorInner = () => {
   const pollingRef = useRef(null);
   const mountedRef = useRef(true);
 
-  const SPRING_URL = 'http://localhost:8080';
+  // Use centralized API_BASE (empty string in dev → Vite proxy, Render URL in prod)
+  const BACKEND_URL = API_BASE || '';
 
   const getDemoMetrics = () => ({
     timestamp: new Date().toISOString(),
@@ -89,12 +91,12 @@ const DBMonitorInner = () => {
 
   const fetchFromSpringBoot = useCallback(async () => {
     try {
-      const token = sessionStorage.getItem('dvbakes_token');
+      const token = sessionStorage.getItem('dvbakes_token') || localStorage.getItem('dvbakes_token');
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       
-      const res = await fetch(`${SPRING_URL}/api/admin/db-metrics`, {
+      const res = await fetch(`${BACKEND_URL}/api/admin/db-metrics`, {
         headers,
-        signal: AbortSignal.timeout(3000)
+        signal: AbortSignal.timeout(5000)
       });
       
       if (res.ok) {
@@ -107,18 +109,18 @@ const DBMonitorInner = () => {
         return true;
       }
     } catch (e) {
-      // Spring Boot not available
+      // Backend not available yet
     }
     return false;
-  }, [updateMetrics]);
+  }, [updateMetrics, BACKEND_URL]);
 
   const fetchHealth = useCallback(async () => {
     try {
-      const token = sessionStorage.getItem('dvbakes_token');
+      const token = sessionStorage.getItem('dvbakes_token') || localStorage.getItem('dvbakes_token');
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await fetch(`${SPRING_URL}/api/admin/server-health`, {
+      const res = await fetch(`${BACKEND_URL}/api/admin/server-health`, {
         headers,
-        signal: AbortSignal.timeout(3000)
+        signal: AbortSignal.timeout(5000)
       });
       if (res.ok && mountedRef.current) {
         setServerHealth(await res.json());
@@ -128,7 +130,7 @@ const DBMonitorInner = () => {
     } catch (e) {
       if (mountedRef.current) setServerHealth(getDemoHealth());
     }
-  }, []);
+  }, [BACKEND_URL]);
 
   useEffect(() => {
     mountedRef.current = true;

@@ -4,6 +4,7 @@ import Navbar from './Navbar';
 import CartDrawer from './CartDrawer';
 import AdminPortal from './AdminPortal';
 import OrderTracker from './OrderTracker';
+import { apiFetch, apiPost, apiDelete } from '../api';
 import { FaArrowLeft, FaArrowRight, FaStar, FaPlus, FaCheck } from 'react-icons/fa';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'framer-motion';
 
@@ -241,14 +242,11 @@ const Hero = () => {
 
   // Fetch products from backend API
   const fetchProducts = async () => {
-    try {
-      const res = await fetch('/api/products');
-      if (res.ok) {
-        const prodData = await res.json();
-        setProducts(prodData);
-      }
-    } catch (err) {
-      console.warn("Could not fetch products from backend, using fallbacks:", err);
+    const { data, error } = await apiFetch('/api/products');
+    if (data && Array.isArray(data)) {
+      setProducts(data);
+    } else {
+      console.warn('Could not fetch products from backend, using fallbacks:', error);
     }
   };
 
@@ -262,19 +260,14 @@ const Hero = () => {
   }, []);
 
   const fetchCart = async () => {
-    try {
-      const url = cartId ? `/api/cart?cartId=${cartId}` : '/api/cart';
-      const res = await fetch(url);
-      if (res.ok) {
-        const cartData = await res.json();
-        setCart(cartData);
-        if (cartData.cartId) {
-          localStorage.setItem('cartId', cartData.cartId);
-          setCartId(cartData.cartId);
-        }
+    const path = cartId ? `/api/cart?cartId=${cartId}` : '/api/cart';
+    const { data } = await apiFetch(path);
+    if (data) {
+      setCart(data);
+      if (data.cartId) {
+        localStorage.setItem('cartId', data.cartId);
+        setCartId(data.cartId);
       }
-    } catch (err) {
-      console.warn("Could not load cart state:", err);
     }
   };
 
@@ -391,72 +384,38 @@ const Hero = () => {
   const handleOrder = async () => {
     if (activeSlide.stock === 0) return;
     playSynthSound('bubble');
-    try {
-      const res = await fetch('/api/cart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cartId,
-          productId: activeSlide.id,
-          quantity: 1,
-          toppings: activeToppings
-        })
-      });
-      if (res.ok) {
-        const cartData = await res.json();
-        setCart(cartData);
-        if (cartData.cartId && !cartId) {
-          localStorage.setItem('cartId', cartData.cartId);
-          setCartId(cartData.cartId);
-        }
-        // Open cart drawer for immediate visual confirmation
-        setCartOpen(true);
-      } else {
-        const err = await res.json();
-        alert(err.error || 'Out of stock!');
+    const { data, error } = await apiPost('/api/cart', {
+      cartId,
+      productId: activeSlide.id,
+      quantity: 1,
+      toppings: activeToppings,
+    });
+    if (data) {
+      setCart(data);
+      if (data.cartId && !cartId) {
+        localStorage.setItem('cartId', data.cartId);
+        setCartId(data.cartId);
       }
-    } catch (err) {
-      console.error("Failed to add item to cart:", err);
+      setCartOpen(true);
+    } else {
+      alert(error || 'Out of stock!');
     }
   };
 
   const handleUpdateQuantity = async (itemId, newQty) => {
-    try {
-      const res = await fetch('/api/cart/item', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cartId,
-          itemId,
-          quantity: newQty
-        })
-      });
-      if (res.ok) {
-        const cartData = await res.json();
-        setCart(cartData);
-      }
-    } catch (err) {
-      console.error("Failed to update quantity:", err);
-    }
+    const { data } = await apiFetch('/api/cart/item', {
+      method: 'PUT',
+      body: JSON.stringify({ cartId, itemId, quantity: newQty }),
+    });
+    if (data) setCart(data);
   };
 
   const handleRemoveItem = async (itemId) => {
-    try {
-      const res = await fetch('/api/cart/item', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cartId,
-          itemId
-        })
-      });
-      if (res.ok) {
-        const cartData = await res.json();
-        setCart(cartData);
-      }
-    } catch (err) {
-      console.error("Failed to remove item:", err);
-    }
+    const { data } = await apiFetch('/api/cart/item', {
+      method: 'DELETE',
+      body: JSON.stringify({ cartId, itemId }),
+    });
+    if (data) setCart(data);
   };
 
   // Called when Checkout completes successfully

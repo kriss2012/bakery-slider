@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './OrderTracker.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiClock, FiCheckCircle, FiTruck, FiPackage, FiSearch, FiArrowLeft, FiShoppingBag, FiDollarSign } from 'react-icons/fi';
+import { apiFetch, API_BASE } from '../api';
 
 const OrderTracker = ({ orderId: initialOrderId, onBackToShop, themeColor = '#5c2e1a', accentColor = '#a1673f' }) => {
   const [orderId, setOrderId] = useState(initialOrderId || localStorage.getItem('lastOrderId') || '');
@@ -15,24 +16,16 @@ const OrderTracker = ({ orderId: initialOrderId, onBackToShop, themeColor = '#5c
     if (!id) return;
     setLoading(true);
     setError('');
-    try {
-      const res = await fetch(`/api/orders/${id.trim()}`);
-      if (res.ok) {
-        const data = await res.json();
-        setOrder(data);
-        localStorage.setItem('lastOrderId', data.id);
-        setOrderId(data.id);
-      } else {
-        const errData = await res.json();
-        setError(errData.error || 'Order not found');
-        setOrder(null);
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Connection error. Please try again.');
-    } finally {
-      setLoading(false);
+    const { data, error } = await apiFetch(`/api/orders/${id.trim()}`);
+    if (data) {
+      setOrder(data);
+      localStorage.setItem('lastOrderId', data.id);
+      setOrderId(data.id);
+    } else {
+      setError(error || 'Order not found');
+      setOrder(null);
     }
+    setLoading(false);
   };
 
   // Poll order details every 10 seconds for real-time status updates
@@ -40,13 +33,10 @@ const OrderTracker = ({ orderId: initialOrderId, onBackToShop, themeColor = '#5c
     fetchOrderDetails(orderId);
     const pollInterval = setInterval(() => {
       if (orderId && !loading) {
-        // Fetch quietly
-        fetch(`/api/orders/${orderId.trim()}`)
-          .then(res => res.ok ? res.json() : null)
-          .then(data => {
-            if (data) setOrder(data);
-          })
-          .catch(err => console.warn("Failed to poll order status:", err));
+        // Silent background poll using apiFetch
+        apiFetch(`/api/orders/${orderId.trim()}`)
+          .then(({ data }) => { if (data) setOrder(data); })
+          .catch(err => console.warn('Failed to poll order status:', err));
       }
     }, 10000);
 

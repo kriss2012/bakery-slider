@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './CartDrawer.css';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiX, FiPlus, FiMinus, FiTrash2, FiShoppingBag, FiCheck, FiCreditCard, FiSmartphone, FiUser, FiPhone, FiMapPin, FiDollarSign } from 'react-icons/fi';
+import { apiPost } from '../api';
 
 const CartDrawer = ({ 
   isOpen, 
@@ -52,41 +53,28 @@ const CartDrawer = ({
   const placeOrder = async (method, payStatus) => {
     setIsPlacingOrder(true);
     setErrorMessage('');
-    try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          cartId: cart.cartId,
-          customerName,
-          customerPhone,
-          customerAddress,
-          paymentMethod: method,
-          paymentStatus: payStatus
-        })
-      });
+    const { data, error } = await apiPost('/api/orders', {
+      cartId: cart.cartId,
+      customerName,
+      customerPhone,
+      customerAddress,
+      paymentMethod: method,
+      paymentStatus: payStatus,
+    });
+    setIsPlacingOrder(false);
 
-      if (res.ok) {
-        const order = await res.json();
-        // Reset states
-        setCheckoutStage('cart');
-        setCustomerName('');
-        setCustomerPhone('');
-        setCustomerAddress('');
-        setPaymentMethod('COD');
-        // Notify parent
-        onCheckoutSuccess(order);
-      } else {
-        const errData = await res.json();
-        setErrorMessage(errData.error || 'Failed to place order. Check stock levels.');
-        // If stock issue, go back to cart
-        setCheckoutStage('cart');
-      }
-    } catch (err) {
-      console.error(err);
-      setErrorMessage('Connection failed. Please try again.');
-    } finally {
-      setIsPlacingOrder(false);
+    if (data) {
+      // Reset form states
+      setCheckoutStage('cart');
+      setCustomerName('');
+      setCustomerPhone('');
+      setCustomerAddress('');
+      setPaymentMethod('COD');
+      // Notify parent with placed order
+      onCheckoutSuccess(data);
+    } else {
+      setErrorMessage(error || 'Failed to place order. Check stock levels.');
+      setCheckoutStage('cart');
     }
   };
 
