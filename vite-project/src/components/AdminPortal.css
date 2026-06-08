@@ -810,3 +810,175 @@
   animation: shake 0.3s ease-in-out;
 }
 
+/* ── AdminPortal Android Responsive ── */
+@media (max-width: 767px) {
+  .admin-page-wrapper {
+    padding: 70px 4% 30px 4%;
+    gap: 20px;
+  }
+  .admin-header-row {
+    gap: 10px;
+  }
+  .admin-page-title {
+    font-size: 1.6rem;
+  }
+  .admin-back-btn {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    min-height: 48px;
+  }
+  /* Stats: 2 columns on tablet */
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .stats-card {
+    padding: 18px 16px;
+    gap: 14px;
+  }
+  .stats-value {
+    font-size: 1.2rem;
+  }
+  /* Tabs: horizontally scrollable pill row */
+  .admin-tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    align-self: stretch;
+    border-radius: 16px;
+    -webkit-overflow-scrolling: touch;
+    padding: 5px;
+    gap: 4px;
+  }
+  .admin-tab-btn {
+    padding: 10px 16px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-height: 44px;
+  }
+  /* Panels */
+  .orders-management-panel,
+  .products-management-panel,
+  .add-product-panel {
+    padding: 20px 16px;
+    border-radius: 20px;
+  }
+  .orders-management-panel h2,
+  .products-management-panel h2,
+  .add-product-panel h2 {
+    font-size: 1.3rem;
+  }
+  /* Tables: ensure horizontal scroll */
+  .admin-table-wrapper {
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-table {
+    font-size: 0.82rem;
+    min-width: 600px;
+  }
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 12px;
+  }
+  /* Charts */
+  .chart-card {
+    padding: 18px 14px;
+    border-radius: 18px;
+  }
+  /* Lockscreen */
+  .lockscreen-card {
+    padding: 28px 24px;
+    border-radius: 24px;
+    margin: 0 16px;
+  }
+  .lockscreen-title {
+    font-size: 1.5rem;
+  }
+  .keypad-btn {
+    height: 56px;
+    border-radius: 14px;
+    font-size: 1.3rem;
+  }
+  .lockscreen-keypad {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-page-wrapper {
+    padding: 65px 4% 24px 4%;
+    gap: 16px;
+  }
+  .admin-page-title {
+    font-size: 1.35rem;
+  }
+  /* Stats: 1 column on tiny phone */
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .stats-card {
+    flex-direction: row;
+    padding: 14px;
+  }
+  .stats-icon-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+  /* Tabs */
+  .admin-tab-btn {
+    padding: 8px 14px;
+    font-size: 0.78rem;
+  }
+  /* Panels */
+  .orders-management-panel,
+  .products-management-panel,
+  .add-product-panel {
+    padding: 16px 12px;
+  }
+  .action-buttons-cell {
+    flex-direction: column;
+  }
+  /* Lockscreen */
+  .lockscreen-card {
+    padding: 24px 16px;
+    margin: 0 10px;
+  }
+  .passcode-dots {
+    gap: 12px;
+  }
+  .keypad-btn {
+    height: 52px;
+    font-size: 1.2rem;
+  }
+  .lockscreen-keypad {
+    gap: 8px;
+  }
+}
+
+@media (max-width: 360px) {
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-tabs {
+    gap: 3px;
+  }
+  .admin-tab-btn {
+    padding: 8px 10px;
+    font-size: 0.73rem;
+  }
+  .lockscreen-card {
+    padding: 20px 12px;
+  }
+  .keypad-btn {
+    height: 48px;
+    font-size: 1.1rem;
+  }
+  .passcode-dot {
+    width: 13px;
+    height: 13px;
+  }
+}
+
