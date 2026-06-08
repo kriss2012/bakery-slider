@@ -244,7 +244,13 @@ const Hero = () => {
   const fetchProducts = async () => {
     const { data, error } = await apiFetch('/api/products');
     if (data && Array.isArray(data)) {
-      setProducts(data);
+      const parsedData = data.map(p => ({
+        ...p,
+        specs: typeof p.specs === 'string' ? JSON.parse(p.specs) : p.specs || [],
+        ingredients: typeof p.ingredients === 'string' ? JSON.parse(p.ingredients) : p.ingredients || [],
+        nutrition: typeof p.nutrition === 'string' ? JSON.parse(p.nutrition) : p.nutrition || []
+      }));
+      setProducts(parsedData);
     } else {
       console.warn('Could not fetch products from backend, using fallbacks:', error);
     }
