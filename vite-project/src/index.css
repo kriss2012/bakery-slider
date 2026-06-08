@@ -66,8 +66,8 @@ a {
   color: inherit;
 }
 
-/* Hide default cursor on desktop for custom cursor */
-@media (min-width: 1024px) {
+/* Hide default cursor on desktop for custom cursor — only on mouse-pointer devices */
+@media (min-width: 1024px) and (pointer: fine) {
   body {
     cursor: none;
   }
