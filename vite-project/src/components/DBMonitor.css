@@ -445,7 +445,80 @@
 }
 
 /* ─── Responsive ─────────────────────────────────────────── */
-@media (max-width: 640px) {
-  .dbmon-grid { grid-template-columns: 1fr 1fr; }
-  .dbmon-header { flex-direction: column; }
+@media (max-width: 767px) {
+  .dbmon-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  .dbmon-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .dbmon-ws-badge {
+    align-self: flex-start;
+  }
+  .dbmon-status-bar {
+    gap: 0.6rem;
+  }
+  .dbmon-last-update {
+    margin-left: 0;
+    width: 100%;
+  }
+  .dbmon-poolbar-section,
+  .dbmon-history-section,
+  .dbmon-server-health {
+    padding: 1rem;
+    border-radius: 14px;
+  }
+  .health-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  .dbmon-history-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+  .dbmon-history-table {
+    min-width: 560px;
+  }
 }
+
+@media (max-width: 480px) {
+  .dbmon-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  .dbmon-card {
+    padding: 1rem;
+  }
+  .dbmon-card-value {
+    font-size: 1.8rem;
+  }
+  .dbmon-title {
+    font-size: 1.1rem;
+  }
+  .dbmon-status-bar {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .dbmon-pool-name {
+    display: none;
+  }
+  .health-grid {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+  .pool-bar-label-row {
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .dbmon-grid {
+    grid-template-columns: 1fr;
+  }
+  .dbmon-card-value {
+    font-size: 1.6rem;
+  }
+}
+
