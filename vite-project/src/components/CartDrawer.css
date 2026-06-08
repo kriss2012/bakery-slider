@@ -18,6 +18,8 @@
   width: 100%;
   max-width: 500px;
   height: 100vh;
+  /* Use dvh for proper Android Chrome address-bar-aware height */
+  height: 100dvh;
   background: rgba(253, 250, 246, 0.95);
   backdrop-filter: blur(20px);
   box-shadow: -10px 0 40px rgba(58, 43, 35, 0.15);
@@ -223,8 +225,8 @@
 }
 
 .qty-btn {
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: white;
   color: var(--color-dark);
@@ -233,6 +235,9 @@
   align-items: center;
   transition: var(--transition-fast);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  /* Android touch target */
+  min-width: 32px;
+  min-height: 32px;
 }
 
 .qty-btn:hover:not(:disabled) {
@@ -627,3 +632,91 @@
   0%, 100% { opacity: .2; }
   50% { opacity: 1; }
 }
+
+/* ── Android Responsive ── */
+@media (max-width: 767px) {
+  .cart-drawer-container {
+    max-width: 100%;
+    border-left: none;
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    top: auto;
+    bottom: 0;
+    height: 95dvh;
+    box-shadow: 0 -10px 40px rgba(58, 43, 35, 0.15);
+  }
+  .cart-backdrop {
+    align-items: flex-end;
+  }
+  .cart-header {
+    padding: 16px 20px;
+  }
+  .cart-title-text {
+    font-size: 1.2rem;
+  }
+  .cart-items-wrapper {
+    padding: 16px 20px;
+    gap: 14px;
+  }
+  .cart-item-card {
+    gap: 12px;
+    padding: 12px;
+  }
+  .cart-item-thumb {
+    width: 65px;
+    height: 65px;
+  }
+  .cart-footer {
+    padding: 16px 20px max(16px, env(safe-area-inset-bottom)) 20px;
+    gap: 10px;
+  }
+  .checkout-btn {
+    padding: 14px;
+    font-size: 1rem;
+    min-height: 52px;
+  }
+  .payment-options-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .checkout-details-form {
+    padding: 16px 20px;
+  }
+  .checkout-details-footer {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  .details-back-btn,
+  .details-submit-btn {
+    min-height: 52px;
+    font-size: 0.9rem;
+  }
+  .upi-gateway-flex {
+    padding: 16px 20px;
+  }
+  .qr-image-placeholder {
+    width: 150px;
+    height: 150px;
+  }
+  .upi-pay-btn {
+    min-height: 52px;
+  }
+}
+
+@media (max-width: 360px) {
+  .payment-options-grid {
+    grid-template-columns: 1fr;
+  }
+  .cart-item-thumb {
+    width: 55px;
+    height: 55px;
+  }
+  .checkout-details-footer {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .details-back-btn,
+  .details-submit-btn {
+    flex: none;
+    width: 100%;
+  }
+}
+
