@@ -757,35 +757,199 @@
   }
 }
 
+/* ── Tablet Portrait (768px) ── */
 @media (max-width: 767px) {
   .hero-wrapper {
-    padding-top: 80px;
+    padding-top: 70px;
+    min-height: auto;
   }
   .hero-grid-container {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1.2rem;
+    padding: 1.5rem 4%;
+    height: auto;
   }
-  .info-title {
-    font-size: 2.2rem;
-  }
-  .price-tag {
-    font-size: 1.8rem;
-  }
-  .hero-btn {
-    padding: 0.8rem 1.5rem;
+  .hero-center-panel {
+    order: -1;
   }
   .perspective-container {
-    height: 280px;
+    height: 260px;
   }
   .interactive-3d-card {
-    width: 200px;
-    height: 200px;
+    width: 220px;
+    height: 220px;
   }
   .parallax-bg-text {
-    font-size: 22vw;
+    font-size: 20vw;
+  }
+  .info-title {
+    font-size: 2rem;
+  }
+  .price-tag {
+    font-size: 1.9rem;
+  }
+  .hero-btn {
+    padding: 0.85rem 1.5rem;
+    font-size: 1rem;
+  }
+  .tabs-header {
+    gap: 0.8rem;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 2px;
+  }
+  .tab-btn {
+    white-space: nowrap;
+    font-size: 0.9rem;
   }
   .toppings-toggles-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* ── Android Phone (max 480px) ── */
+@media (max-width: 480px) {
+  .hero-wrapper {
+    padding-top: 65px;
+  }
+  .hero-grid-container {
+    padding: 1rem 4%;
+    gap: 1rem;
+  }
+  .perspective-container {
+    height: 220px;
+  }
+  .interactive-3d-card {
+    width: 180px;
+    height: 180px;
+  }
+  .parallax-bg-text {
+    font-size: 18vw;
+    letter-spacing: 0;
+  }
+  .info-category {
+    font-size: 0.75rem;
+  }
+  .info-title {
+    font-size: 1.7rem;
+    letter-spacing: -0.5px;
+  }
+  .rating-row {
+    margin-bottom: 1.2rem;
+  }
+  .tabs-header {
+    gap: 0.5rem;
+  }
+  .tab-btn {
+    font-size: 0.82rem;
+    padding: 0.5rem 0.1rem;
+  }
+  .tab-body {
+    min-height: 140px;
+  }
+  .info-desc {
+    font-size: 0.88rem;
+  }
+  .specs-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+  .spec-card {
+    padding: 0.5rem 0.75rem;
+  }
+  /* Order actions: stack vertically on very small screens */
+  .order-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  .price-tag {
+    font-size: 1.7rem;
+    flex-shrink: 0;
+  }
+  .hero-btn {
+    flex-grow: 1;
+    min-width: 0;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+    border-radius: 30px;
+  }
+  /* Toppings: 2-column grid stays, but reduce padding */
+  .toppings-toggles-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+  }
+  .topping-toggle {
+    padding: 0.55rem 0.6rem;
+    font-size: 0.75rem;
+    border-radius: 10px;
+    min-height: 44px;
+  }
+  /* Slider arrows */
+  .hero-slider-arrows {
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+  .arrow-circle {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+  }
+  .slider-counter {
+    font-size: 0.95rem;
+  }
+  /* Thumbnail deck: horizontal scroll */
+  .thumbnail-deck-list {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-height: none;
+    padding-bottom: 8px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .thumbnail-card {
+    flex: 0 0 160px;
+    scroll-snap-align: start;
+    min-height: 44px;
+  }
+  .thumb-img-box {
+    width: 44px;
+    height: 44px;
+  }
+  /* Glassmorphic boxes */
+  .customizer-box, .slider-deck-box {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+  .sidebar-section-title {
+    font-size: 0.95rem;
+  }
+}
+
+/* ── Tiny Android (max 360px) ── */
+@media (max-width: 360px) {
+  .info-title {
+    font-size: 1.5rem;
+  }
+  .price-tag {
+    font-size: 1.5rem;
+  }
+  .toppings-toggles-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+  .topping-toggle {
+    font-size: 0.7rem;
+    padding: 0.45rem 0.5rem;
+  }
+  .interactive-3d-card {
+    width: 150px;
+    height: 150px;
+  }
+  .perspective-container {
+    height: 190px;
+  }
+}
